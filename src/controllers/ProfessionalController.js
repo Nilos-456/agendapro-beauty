@@ -1,42 +1,42 @@
-// Importamos os modelos que estão mapeados na pasta models
 const { Professional } = require('../../models');
+
 module.exports = {
-  // 1. Rota de Listagem (GET /professionals)
-  // Retorna todos os profissionais cadastrados no banco de dados
+  // Rota de Listagem (Mantém igual)
   async index(req, res) {
     try {
       const professionals = await Professional.findAll();
       return res.status(200).json(professionals);
     } catch (error) {
       console.error('Erro no index:', error);
-      return res.status(500).json({ error: 'Erro ao buscar profissionais no banco de dados.' });
+      return res.status(500).json({ error: 'Erro ao buscar profissionais.' });
     }
   },
 
-  // 2. Rota de Cadastro (POST /professionals)
-  // Recebe os dados do corpo da requisição e cria um novo registro
+  // Rota de Cadastro em Massa (Modificada para aceitar listas!)
   async store(req, res) {
     try {
-      const { nome, specialty, telefone, ativo } = req.body;
+      const professionalsList = req.body;
 
-      // Validação básica de campos obrigatórios exigida na Sprint 2
-      if (!nome || !specialty) {
-        return res.status(400).json({ error: 'Nome e Especialidade são campos obrigatórios.' });
+      // Se não for uma lista ou estiver vazia, avisa o usuário
+      if (!Array.isArray(professionalsList) || professionalsList.length === 0) {
+        return res.status(400).json({ error: 'O corpo da requisição deve ser uma lista [] de profissionais.' });
       }
 
-      // Criando o registro no banco usando o Sequelize
-      const professional = await Professional.create({
-        nome,
-        especialidade: specialty, // Mapeando o termo do JSON para a coluna certa do banco
-        telefone,
-        ativo: ativo !== undefined ? ativo : true // Se não enviar nada, define como ativo por padrão
-      });
+      // Mapeia os campos do JSON para as colunas corretas do banco de dados
+      const formattedProfessionals = professionalsList.map(p => ({
+        nome: p.nome,
+        especialidade: p.specialty,
+        telefone: p.telefone,
+        ativo: p.ativo !== undefined ? p.ativo : true
+      }));
 
-      // Retorna o profissional criado com o status 201 (Created)
-      return res.status(201).json(professional);
+      // Salva todos de uma vez só no PostgreSQL
+      const createdProfessionals = await Professional.bulkCreate(formattedProfessionals);
+
+      return res.status(201).json(createdProfessionals);
     } catch (error) {
-      console.error('Erro no store:', error);
-      return res.status(500).json({ error: 'Erro ao salvar o profissional no banco de dados.' });
+      console.error('Erro no storeBulk:', error);
+      return res.status(500).json({ error: 'Erro ao salvar a lista de profissionais no banco de dados.' });
     }
   }
 };
