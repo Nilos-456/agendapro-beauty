@@ -1,24 +1,20 @@
-// 1. Importa o Express que instalamos no passo anterior
 const express = require('express');
+const professionalRoutes = require('./routes/professionalRoutes');
 
-// 2. Cria a nossa aplicação/servidor Express
 const app = express();
 
-// 3. Diz ao Express para aceitar e entender dados no formato JSON
+// OBRIGATÓRIO: Para o Express entender as informações enviadas no cadastro
 app.use(express.json());
 
-// 4. Cria a nossa primeira "Rota" de teste (uma rota do tipo GET)
-// Quando alguém acessar http://localhost:3000/health, o servidor vai responder isso:
+// Rota de teste simples
 app.get('/health', (req, res) => {
-    return res.status(200).json({ 
-        status: "AgendaPro Beauty API rodando com sucesso!" 
-    });
+  res.status(200).json({ status: 'OK', message: 'Servidor rodando!' });
 });
 
-// 5. Define a porta onde o servidor vai ficar "escutando"
-const PORT = 3000;
+// Vincula as rotas de profissionais ao servidor Express
+app.use(professionalRoutes);
 
-// 6. Liga o servidor de fato
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor iniciado com sucesso em http://localhost:${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
