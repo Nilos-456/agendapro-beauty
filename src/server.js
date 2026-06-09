@@ -1,5 +1,6 @@
 const express = require('express');
 const professionalRoutes = require('./routes/professionalRoutes');
+const serviceRoutes = require('./routes/serviceRoutes');
 
 const app = express();
 
@@ -11,8 +12,9 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Servidor rodando!' });
 });
 
-// Vincula as rotas de profissionais ao servidor Express
+// Vincula as rotas ao servidor Express (As duas precisam estar aqui)
 app.use(professionalRoutes);
+app.use(serviceRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
