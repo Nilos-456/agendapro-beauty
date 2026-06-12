@@ -13,10 +13,9 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Servidor rodando!' });
 });
 
-// Vincula as rotas ao servidor Express (As duas precisam estar aqui)
-app.use(professionalRoutes);
-app.use(serviceRoutes);
-app.use(appointmentRoutes);
+app.use('/professionals', professionalRoutes);
+app.use('/services', serviceRoutes);
+app.use('/appointments', appointmentRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

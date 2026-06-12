@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const ServiceController = require('../controllers/ServiceController');
+const ServiceController = require('../controllers/serviceController'); // Verifique se o caminho e o nome estão certos
 
-// Rotas para a entidade de Serviços
-router.get('/services', ServiceController.index);
-router.post('/services', ServiceController.store);
+router.post('/', ServiceController.store); 
+router.get('/', ServiceController.index);
+
 
 module.exports = router;

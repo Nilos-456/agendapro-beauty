@@ -1,10 +1,11 @@
-const { Appointment } = require('../models');
+const { Appointment } = require('../../models'); 
 
 class AppointmentService {
-  // O Service assume a responsabilidade de interagir diretamente com o Model
   static async createBulkAppointments(appointmentsData) {
+    // Garantindo que a variável appointmentsData está escrita perfeitamente sem espaços ocultos
     return await Appointment.bulkCreate(appointmentsData);
   }
 }
 
 module.exports = AppointmentService;
+
