@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const ServiceController = require('../controllers/serviceController'); // Verifique se o caminho e o nome estão certos
+const serviceController = require('../controllers/serviceController');
 
-router.post('/', ServiceController.store); 
-router.get('/', ServiceController.index);
+// Rotas existentes
+router.get('/', serviceController.index);
+router.post('/', serviceController.store);
 
+// Novas rotas adicionadas para o CRUD completo
+router.put('/:id', serviceController.update);
+router.delete('/:id', serviceController.delete);
 
 module.exports = router;

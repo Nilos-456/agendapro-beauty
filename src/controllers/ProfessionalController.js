@@ -1,18 +1,18 @@
-const { Professional } = require('../../models');
+const ProfessionalService = require('../services/professionalService');
 
 module.exports = {
-  // 1. Rota de Listagem
+  // 1. Listar profissionais (GET)
   async index(req, res) {
     try {
-      const professionals = await Professional.findAll();
+      const professionals = await ProfessionalService.getAllProfessionals();
       return res.status(200).json(professionals);
     } catch (error) {
-      console.error('Erro no index:', error);
-      return res.status(500).json({ error: 'Erro ao buscar profissionais.' });
+      console.error('Erro no index de profissionais:', error);
+      return res.status(500).json({ error: 'Erro ao buscar profissionais.', details: error.message });
     }
   },
 
-  // 2. Rota de Cadastro em Massa
+  // 2. Cadastrar em lote (POST Bulk)
   async store(req, res) {
     try {
       const professionalsList = req.body;
@@ -21,67 +21,61 @@ module.exports = {
         return res.status(400).json({ error: 'O corpo da requisição deve ser uma lista [] de profissionais.' });
       }
 
-      const formattedProfessionals = professionalsList.map(p => ({
+      // Garantimos que cada objeto do array tenha exatamente o formato esperado pelo Model
+      const cleanData = professionalsList.map(p => ({
         nome: p.nome,
-        especialidade: p.specialty,
+        especialidade: p.especialidade,
         telefone: p.telefone,
         ativo: p.ativo !== undefined ? p.ativo : true
       }));
 
-      const createdProfessionals = await Professional.bulkCreate(formattedProfessionals);
-      return res.status(201).json(createdProfessionals);
+      // Passa os dados limpos para o Service
+      await ProfessionalService.createBulkProfessionals(cleanData);
+      
+      return res.status(201).json({
+        message: 'Lista de profissionais salva com sucesso!',
+        count: cleanData.length
+      });
     } catch (error) {
       console.error('Erro no storeBulk:', error);
-      return res.status(500).json({ error: 'Erro ao salvar a lista de profissionais no banco de dados.' });
+      return res.status(500).json({ error: 'Erro ao salvar a lista de profissionais no banco de dados.', details: error.message });
     }
   },
 
-  // 3. Rota de Atualização (PUT)
+  // 3. Editar profissional (PUT)
   async update(req, res) {
     try {
-      const { id } = req.params; // Pega o ID da URL (ex: /professionals/1)
-      const { nome, specialty, telefone, ativo } = req.body;
-
-      // Busca o profissional no banco pelo ID
-      const professional = await Professional.findByPk(id);
-
-      if (!professional) {
+      const { id } = req.params;
+      const updatedProfessional = await ProfessionalService.updateProfessional(id, req.body);
+      
+      if (!updatedProfessional) {
         return res.status(404).json({ error: 'Profissional não encontrado.' });
       }
 
-      // Atualiza os dados no banco (mapeando specialty para especialidade)
-      await professional.update({
-        nome: nome || professional.nome,
-        especialidade: specialty || professional.especialidade,
-        telefone: telefone || professional.telefone,
-        ativo: ativo !== undefined ? ativo : professional.ativo
+      return res.status(200).json({
+        message: 'Profissional atualizado com sucesso!',
+        data: updatedProfessional
       });
-
-      return res.status(200).json(professional);
     } catch (error) {
-      console.error('Erro no update:', error);
-      return res.status(500).json({ error: 'Erro ao atualizar profissional.' });
+      console.error('Erro no update de profissionais:', error);
+      return res.status(400).json({ error: 'Erro ao atualizar o profissional.', details: error.message });
     }
   },
 
-  // 4. Rota de Exclusão (DELETE)
+  // 4. Deletar profissional (DELETE)
   async delete(req, res) {
     try {
       const { id } = req.params;
+      const deleted = await ProfessionalService.deleteProfessional(id);
 
-      const professional = await Professional.findByPk(id);
-
-      if (!professional) {
+      if (!deleted) {
         return res.status(404).json({ error: 'Profissional não encontrado.' });
       }
 
-      // Deleta o registro do PostgreSQL
-      await professional.destroy();
-
-      return res.status(200).json({ message: 'Profissional deletado com sucesso!' });
+      return res.status(200).json({ message: 'Profissional excluído com sucesso!' });
     } catch (error) {
-      console.error('Erro no delete:', error);
-      return res.status(500).json({ error: 'Erro ao deletar profissional.' });
+      console.error('Erro no delete de profissionais:', error);
+      return res.status(500).json({ error: 'Erro ao excluir o profissional.', details: error.message });
     }
   }
 };
