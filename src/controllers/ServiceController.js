@@ -1,10 +1,22 @@
-const ServiceService = require('../services/serviceService');
+// Importa o model Service direto da sua pasta real mapeada pelo Sequelize
+const { Service } = require('../../models'); 
 
 module.exports = {
-  // 1. Listar todos os serviços
+  // 1. Listar todos os serviços (Aceita filtro opcional ex: /services?area_id=2)
   async index(req, res) {
     try {
-      const services = await ServiceService.getAllServices();
+      // Captura o area_id que vem opcionalmente na URL
+      const { area_id } = req.query; 
+
+      let filtro = {};
+      // Se informarem uma área na URL, aplica o filtro na busca do Sequelize
+      if (area_id) {
+        filtro.area_id = area_id;
+      }
+
+      // Busca direta no banco de dados usando o seu Model real
+      const services = await Service.findAll({ where: filtro });
+      
       return res.status(200).json(services);
     } catch (error) {
       console.error('Erro no index de serviços:', error);
@@ -19,10 +31,13 @@ module.exports = {
       if (!Array.isArray(servicesList) || servicesList.length === 0) {
         return res.status(400).json({ error: 'O corpo da requisição deve ser uma lista [] de serviços.' });
       }
-      await ServiceService.createBulkServices(servicesList);
+
+      // Cria todos os registros da lista de uma vez diretamente no banco usando o ORM
+      const criados = await Service.bulkCreate(servicesList);
+
       return res.status(201).json({
         message: 'Lista de serviços salva com sucesso!',
-        count: servicesList.length
+        count: criados.length
       });
     } catch (error) {
       console.error('Erro no store de serviços:', error);
@@ -34,15 +49,21 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const updatedService = await ServiceService.updateService(id, req.body);
+      const { area_id, nome_servico, preco, duracao } = req.body;
+
+      // Busca o serviço pelo ID antes de tentar atualizar
+      const service = await Service.findByPk(id);
       
-      if (!updatedService) {
+      if (!service) {
         return res.status(404).json({ error: 'Serviço não encontrado.' });
       }
 
+      // Atualiza os campos enviados na requisição
+      await service.update({ area_id, nome_servico, preco, duracao });
+
       return res.status(200).json({
-        message: 'Serviço atualizado com sucesso!',
-        data: updatedService
+        message: 'Serviço updated com sucesso!',
+        data: service
       });
     } catch (error) {
       console.error('Erro no update de serviços:', error);
@@ -54,11 +75,16 @@ module.exports = {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const deleted = await ServiceService.deleteService(id);
+      
+      // Busca o serviço para checar se ele existe antes de deletar
+      const service = await Service.findByPk(id);
 
-      if (!deleted) {
+      if (!service) {
         return res.status(404).json({ error: 'Serviço não encontrado.' });
       }
+
+      // Deleta o registro do banco de dados
+      await service.destroy();
 
       return res.status(200).json({ message: 'Serviço excluído com sucesso!' });
     } catch (error) {
@@ -67,3 +93,5 @@ module.exports = {
     }
   }
 };
+
+  
