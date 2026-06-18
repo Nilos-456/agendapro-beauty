@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const serviceController = require('../controllers/serviceController');
+const serviceController = require('../controllers/ServiceController');
 
 // Rotas existentes
 router.get('/', serviceController.index);

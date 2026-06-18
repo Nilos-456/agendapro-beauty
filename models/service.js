@@ -4,24 +4,25 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Service extends Model {
     static associate(models) {
-      // Configura a associação: Um Serviço pertence a uma Área (Area)
-      // Certifique-se de que o seu model de área chama 'Area' ou ajuste o nome abaixo
-      this.belongsTo(models.Area, { 
-        foreignKey: 'area_id', 
-        as: 'area' 
-      });
+      // COMENTADO TEMPORARIAMENTE ATÉ VOCÊ CRIAR O MODEL DA ÁREA
+      // this.belongsTo(models.Area, { 
+      //   foreignKey: 'area_id', 
+      //   as: 'area' 
+      // });
     }
   }
   
   Service.init({
-    // Adicionando a chave estrangeira da área conforme o diagrama ER do IFRS
+    // Mantemos o campo area_id normal para o banco salvar o número da área!
     area_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Areas', // Nome da tabela de áreas no banco de dados
-        key: 'id'
-      }
+      allowNull: false
+      // Se der erro de banco reclamando que a tabela Areas não existe, 
+      // comente também o bloco 'references' abaixo:
+      // references: {
+      //   model: 'Areas', 
+      //   key: 'id'
+      // }
     },
     nome_servico: {
       type: DataTypes.STRING,
@@ -31,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     preco: {
-      type: DataTypes.FLOAT, // Seu padrão atual (pode ser FLOAT ou DECIMAL)
+      type: DataTypes.FLOAT, 
       allowNull: false,
       validate: {
         isFloat: { msg: "O preço precisa ser um número válido." },
@@ -39,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     duracao: {
-      type: DataTypes.INTEGER, // Tempo em minutos
+      type: DataTypes.INTEGER, 
       allowNull: false,
       validate: {
         isInt: { msg: "A duração precisa ser um número inteiro de minutos." },
@@ -49,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Service',
-    tableName: 'services', // Garante que o Sequelize use o nome correto da tabela
+    tableName: 'Services', // IMPORTANTE: Deixe com "S" maiúsculo igual está na sua migration!
   });
   
   return Service;

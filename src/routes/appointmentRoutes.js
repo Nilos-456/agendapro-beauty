@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const AppointmentController = require('../controllers/appointmentController');
+const appointmentController = require('../controllers/appointmentController');
 
-// Linha 5: Garanta que aponta exatamente para AppointmentController.createBulk
-router.post('/bulk', AppointmentController.createBulk);
+// Garanta que os métodos mapeados abaixo existam no controlador
+router.get('/', appointmentController.index);
+router.post('/', appointmentController.store);
+router.put('/:id', appointmentController.update);
+router.delete('/:id', appointmentController.delete);
 
 module.exports = router;
