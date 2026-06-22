@@ -11,23 +11,28 @@ module.exports = {
     }
   },
 
-  // 2. Criar um novo profissional
-  async store(req, res) {
+ async store(req, res) {
     try {
-      const { nome, especialidade, contato } = req.body;
+      // 1. Certifique-se de pegar o telefone aqui do req.body!
+      const { nome, especialidade, telefone } = req.body;
 
-      // Validação simples dos campos obrigatórios
-      if (!nome || !especialidade) {
-        return res.status(400).json({ error: 'Nome e especialidade são obrigatórios.' });
+      // Validação básica
+      if (!nome || !especialidade || !telefone) {
+        return res.status(400).json({ error: 'Nome, especialidade e telefone são obrigatórios.' });
       }
 
-      const newProfessional = await Professional.create({ nome, especialidade, contato });
+      // 2. Passe o telefone para dentro do Professional.create
+      const newProfessional = await Professional.create({ 
+        nome, 
+        especialidade, 
+        telefone 
+      });
+
       return res.status(201).json(newProfessional);
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao criar profissional.', details: error.message });
+      return res.status(400).json({ error: 'Erro ao criar profissional.', details: error.message });
     }
   },
-
   // 3. Atualizar dados de um profissional
   async update(req, res) {
     try {

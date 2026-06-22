@@ -1,4 +1,5 @@
-const { Appointment } = require('../../models'); // Sobe duas pastas para achar o models na raiz
+const { Appointment, Professional, Service } = require('../../models');
+const { Op } = require('sequelize'); // Importa os operadores do Sequelize para fazer buscas avançadas
 
 module.exports = {
   // 1. Listar todos os agendamentos
@@ -11,18 +12,54 @@ module.exports = {
     }
   },
 
-  // 2. Criar um novo agendamento
+  // 2. Criar um novo agendamento com REGRAS DE NEGÓCIO
   async store(req, res) {
     try {
       const { professional_id, service_id, data_hora, status } = req.body;
 
-      // Validação rápida de campos obrigatórios
+      // Validação básica de campos preenchidos
       if (!professional_id || !service_id || !data_hora) {
         return res.status(400).json({ error: 'Profissional, serviço e data/hora são obrigatórios.' });
       }
 
-      const newAppointment = await Appointment.create({ professional_id, service_id, data_hora, status });
-      return res.status(201).json(newAppointment);
+      // REGRA 1: Validar se o Profissional realmente existe no banco
+      const professionalExists = await Professional.findByPk(professional_id);
+      if (!professionalExists) {
+        return res.status(404).json({ error: `Profissional com ID ${professional_id} não foi encontrado.` });
+      }
+
+      // REGRA 2: Validar se o Serviço realmente existe no banco
+      const serviceExists = await Service.findByPk(service_id);
+      if (!serviceExists) {
+        return res.status(404).json({ error: `Serviço com ID ${service_id} não foi encontrado.` });
+      }
+
+      // REGRA 3: Evitar choque de horário para o mesmo profissional
+      // Procura se já existe algum agendamento para o mesmo profissional na mesmíssima data/hora
+      const horarioOcupado = await Appointment.findOne({
+        where: {
+          professional_id,
+          data_hora: new Date(data_hora) // Garante a comparação correta de datas
+        }
+      });
+
+      if (horarioOcupado) {
+        return res.status(400).json({ error: 'Este profissional já possui um agendamento neste horário.' });
+      }
+
+      // Se passou por todas as regras, cria o agendamento!
+      const newAppointment = await Appointment.create({ 
+        professional_id, 
+        service_id, 
+        data_hora, 
+        status: status || 'agendado' // Se não enviar status, assume 'agendado'
+      });
+
+      return res.status(201).json({
+        message: 'Agendamento realizado com sucesso!',
+        data: newAppointment
+      });
+
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao criar agendamento.', details: error.message });
     }
