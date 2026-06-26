@@ -2,10 +2,23 @@ const { Appointment, Professional, Service } = require('../../models');
 const { Op } = require('sequelize'); // Importa os operadores do Sequelize para fazer buscas avançadas
 
 module.exports = {
-  // 1. Listar todos os agendamentos
+  // 1. Listar todos os agendamentos trazendo dados do Profissional e Serviço
   async index(req, res) {
     try {
-      const appointments = await Appointment.findAll();
+      const appointments = await Appointment.findAll({
+        include: [
+          {
+            model: Professional,
+            as: 'professional',
+            attributes: ['id', 'nome', 'especialidade']
+          },
+          {
+            model: Service,
+            as: 'service' // Mantemos o alias exigido para evitar o Erro 500
+          }
+        ],
+        order: [['data_hora', 'ASC']]
+      });
       return res.status(200).json(appointments);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao listar agendamentos.', details: error.message });
@@ -35,7 +48,6 @@ module.exports = {
       }
 
       // REGRA 3: Evitar choque de horário para o mesmo profissional
-      // Procura se já existe algum agendamento para o mesmo profissional na mesmíssima data/hora
       const horarioOcupado = await Appointment.findOne({
         where: {
           professional_id,
@@ -48,10 +60,10 @@ module.exports = {
       }
 
       // Se passou por todas as regras, cria o agendamento!
-      const newAppointment = await Appointment.create({ 
-        professional_id, 
-        service_id, 
-        data_hora, 
+      const newAppointment = await Appointment.create({
+        professional_id,
+        service_id,
+        data_hora,
         status: status || 'agendado' // Se não enviar status, assume 'agendado'
       });
 
