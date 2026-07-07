@@ -1,70 +1,122 @@
-const { Professional } = require('../../models'); // Adicionados mais dois pontos (..) para sair de src e ir para a raiz! // Importa o model direto do banco
+const professionalService = require('../services/professionalService');
 
 module.exports = {
-  // 1. Listar todos os profissionais
-  async index(req, res) {
+  // 1. Listar todos os profissionais ativos
+  async index(req, res, next) {
     try {
-      const professionals = await Professional.findAll();
-      return res.status(200).json(professionals);
+      const professionals = await professionalService.listAll();
+      return res.status(200).json({
+        success: true,
+        count: professionals.length,
+        data: professionals
+      });
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao listar profissionais.', details: error.message });
+      next(error);
     }
   },
 
- async store(req, res) {
+  // 2. Buscar profissional por ID
+  async show(req, res, next) {
     try {
-      // 1. Certifique-se de pegar o telefone aqui do req.body!
+      const { id } = req.params;
+      const professional = await professionalService.findById(id);
+
+      return res.status(200).json({
+        success: true,
+        data: professional
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 3. Criar novo profissional
+  async store(req, res, next) {
+    try {
       const { nome, especialidade, telefone } = req.body;
 
       // Validação básica
       if (!nome || !especialidade || !telefone) {
-        return res.status(400).json({ error: 'Nome, especialidade e telefone são obrigatórios.' });
+        return res.status(400).json({
+          success: false,
+          error: 'Nome, especialidade e telefone são obrigatórios.'
+        });
       }
 
-      // 2. Passe o telefone para dentro do Professional.create
-      const newProfessional = await Professional.create({ 
-        nome, 
-        especialidade, 
-        telefone 
+      const newProfessional = await professionalService.create({
+        nome,
+        especialidade,
+        telefone
       });
 
-      return res.status(201).json(newProfessional);
+      return res.status(201).json({
+        success: true,
+        message: 'Profissional criado com sucesso!',
+        data: newProfessional
+      });
     } catch (error) {
-      return res.status(400).json({ error: 'Erro ao criar profissional.', details: error.message });
-    }
-  },
-  // 3. Atualizar dados de um profissional
-  async update(req, res) {
-    try {
-      const { id } = req.params;
-      const { nome, especialidade, contato } = req.body;
-
-      const professional = await Professional.findByPk(id);
-      if (!professional) {
-        return res.status(404).json({ error: 'Profissional não encontrado.' });
-      }
-
-      await professional.update({ nome, especialidade, contato });
-      return res.status(200).json(professional);
-    } catch (error) {
-      return res.status(500).json({ error: 'Erro ao atualizar profissional.', details: error.message });
+      next(error);
     }
   },
 
-  // 4. Deletar um profissional
-  async delete(req, res) {
+  // 4. Atualizar profissional
+  async update(req, res, next) {
     try {
       const { id } = req.params;
+      const { nome, especialidade, telefone } = req.body;
 
-      const professional = await Professional.findByPk(id);
-      if (!professional) {
-        return res.status(404).json({ error: 'Profissional não encontrado.' });
+      const professional = await professionalService.update(id, {
+        nome,
+        especialidade,
+        telefone
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Profissional atualizado com sucesso!',
+        data: professional
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 5. Deletar profissional (soft delete)
+  async delete(req, res, next) {
+    try {
+      const { id } = req.params;
+      await professionalService.delete(id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Profissional deletado com sucesso.'
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 6. Buscar profissionais por especialidade
+  async findBySpecialty(req, res, next) {
+    try {
+      const { especialidade } = req.query;
+
+      if (!especialidade) {
+        return res.status(400).json({
+          success: false,
+          error: 'Especialidade é obrigatória'
+        });
       }
 
-      await professional.destroy();
-      return res.status(200).json({ message: 'Profissional deletado com sucesso.' });
+      const professionals = await professionalService.findBySpecialty(especialidade);
+
+      return res.status(200).json({
+        success: true,
+        count: professionals.length,
+        data: professionals
+      });
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao deletar profissional.', details: error.message });
+      next(error);
     }
   }
 };

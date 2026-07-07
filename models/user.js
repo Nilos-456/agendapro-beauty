@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     associate(models) {
-      // As associações com agendamentos entrarão aqui no futuro
+      
     }
   }
   

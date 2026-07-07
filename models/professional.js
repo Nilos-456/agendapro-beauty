@@ -4,14 +4,18 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Professional extends Model {
     associate(models) {
-      // Futuramente faremos o relacionamento com a agenda e os agendamentos aqui
+      // Um profissional tem muitos agendamentos
+      this.hasMany(models.Appointment, {
+        foreignKey: 'professional_id',
+        as: 'appointments'
+      });
     }
   }
   
   Professional.init({
     nome: {
       type: DataTypes.STRING,
-      allowNull: false, // Campo obrigatório exigido na Sprint 2
+      allowNull: false, 
       validate: {
         notEmpty: true
       }

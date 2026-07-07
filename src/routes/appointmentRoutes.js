@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointmentController');
 
-// Garanta que os métodos mapeados abaixo existam no controlador
-router.get('/', appointmentController.index);
-router.post('/', appointmentController.store);
-router.put('/:id', appointmentController.update);
-router.delete('/:id', appointmentController.delete);
+// Rotas de agendamentos
+router.get('/', appointmentController.index);                           // Listar todos
+router.post('/', appointmentController.store);                          // Criar novo
+router.get('/professional/:professionalId', appointmentController.listByProfessional); // Listar por profissional
+router.get('/:id', appointmentController.show);                         // Buscar por ID
+router.put('/:id', appointmentController.update);                       // Atualizar
+router.delete('/:id', appointmentController.delete);                    // Deletar
 
 module.exports = router;

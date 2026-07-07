@@ -1,114 +1,116 @@
-const { Appointment, Professional, Service } = require('../../models');
-const { Op } = require('sequelize'); // Importa os operadores do Sequelize para fazer buscas avançadas
+const appointmentService = require('../services/appointmentService');
 
 module.exports = {
-  // 1. Listar todos os agendamentos trazendo dados do Profissional e Serviço
-  async index(req, res) {
+  // 1. Listar todos os agendamentos com filtros opcionais
+  async index(req, res, next) {
     try {
-      const appointments = await Appointment.findAll({
-        include: [
-          {
-            model: Professional,
-            as: 'professional',
-            attributes: ['id', 'nome', 'especialidade']
-          },
-          {
-            model: Service,
-            as: 'service' // Mantemos o alias exigido para evitar o Erro 500
-          }
-        ],
-        order: [['data_hora', 'ASC']]
+      const filters = req.query;
+      const appointments = await appointmentService.listAll(filters);
+      return res.status(200).json({
+        success: true,
+        count: appointments.length,
+        data: appointments
       });
-      return res.status(200).json(appointments);
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao listar agendamentos.', details: error.message });
+      next(error);
     }
   },
 
-  // 2. Criar um novo agendamento com REGRAS DE NEGÓCIO
-  async store(req, res) {
+  // 2. Criar novo agendamento
+  async store(req, res, next) {
     try {
       const { professional_id, service_id, data_hora, status } = req.body;
 
-      // Validação básica de campos preenchidos
+      // Validação básica
       if (!professional_id || !service_id || !data_hora) {
-        return res.status(400).json({ error: 'Profissional, serviço e data/hora são obrigatórios.' });
+        return res.status(400).json({
+          success: false,
+          error: 'Profissional, serviço e data/hora são obrigatórios.'
+        });
       }
 
-      // REGRA 1: Validar se o Profissional realmente existe no banco
-      const professionalExists = await Professional.findByPk(professional_id);
-      if (!professionalExists) {
-        return res.status(404).json({ error: `Profissional com ID ${professional_id} não foi encontrado.` });
-      }
-
-      // REGRA 2: Validar se o Serviço realmente existe no banco
-      const serviceExists = await Service.findByPk(service_id);
-      if (!serviceExists) {
-        return res.status(404).json({ error: `Serviço com ID ${service_id} não foi encontrado.` });
-      }
-
-      // REGRA 3: Evitar choque de horário para o mesmo profissional
-      const horarioOcupado = await Appointment.findOne({
-        where: {
-          professional_id,
-          data_hora: new Date(data_hora) // Garante a comparação correta de datas
-        }
-      });
-
-      if (horarioOcupado) {
-        return res.status(400).json({ error: 'Este profissional já possui um agendamento neste horário.' });
-      }
-
-      // Se passou por todas as regras, cria o agendamento!
-      const newAppointment = await Appointment.create({
+      const newAppointment = await appointmentService.create({
         professional_id,
         service_id,
         data_hora,
-        status: status || 'agendado' // Se não enviar status, assume 'agendado'
+        status
       });
 
       return res.status(201).json({
+        success: true,
         message: 'Agendamento realizado com sucesso!',
         data: newAppointment
       });
-
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao criar agendamento.', details: error.message });
+      next(error);
     }
   },
 
-  // 3. Atualizar um agendamento
-  async update(req, res) {
+  // 3. Buscar agendamento por ID
+  async show(req, res, next) {
+    try {
+      const { id } = req.params;
+      const appointment = await appointmentService.findById(id);
+      return res.status(200).json({
+        success: true,
+        data: appointment
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 4. Atualizar agendamento
+  async update(req, res, next) {
     try {
       const { id } = req.params;
       const { professional_id, service_id, data_hora, status } = req.body;
 
-      const appointment = await Appointment.findByPk(id);
-      if (!appointment) {
-        return res.status(404).json({ error: 'Agendamento não encontrado.' });
-      }
+      const appointment = await appointmentService.update(id, {
+        professional_id,
+        service_id,
+        data_hora,
+        status
+      });
 
-      await appointment.update({ professional_id, service_id, data_hora, status });
-      return res.status(200).json(appointment);
+      return res.status(200).json({
+        success: true,
+        message: 'Agendamento atualizado com sucesso!',
+        data: appointment
+      });
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao atualizar agendamento.', details: error.message });
+      next(error);
     }
   },
 
-  // 4. Deletar um agendamento
-  async delete(req, res) {
+  // 5. Deletar agendamento
+  async delete(req, res, next) {
     try {
       const { id } = req.params;
+      await appointmentService.delete(id);
 
-      const appointment = await Appointment.findByPk(id);
-      if (!appointment) {
-        return res.status(404).json({ error: 'Agendamento não encontrado.' });
-      }
-
-      await appointment.destroy();
-      return res.status(200).json({ message: 'Agendamento deletado com sucesso.' });
+      return res.status(200).json({
+        success: true,
+        message: 'Agendamento deletado com sucesso.'
+      });
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao deletar agendamento.', details: error.message });
+      next(error);
+    }
+  },
+
+  // 6. Listar agendamentos de um profissional específico
+  async listByProfessional(req, res, next) {
+    try {
+      const { professionalId } = req.params;
+      const appointments = await appointmentService.listByProfessional(professionalId);
+
+      return res.status(200).json({
+        success: true,
+        count: appointments.length,
+        data: appointments
+      });
+    } catch (error) {
+      next(error);
     }
   }
 };

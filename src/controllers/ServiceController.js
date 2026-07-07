@@ -1,97 +1,127 @@
-// Importa o model Service direto da sua pasta real mapeada pelo Sequelize
-const { Service } = require('../../models'); 
+const serviceService = require('../services/serviceService');
 
 module.exports = {
-  // 1. Listar todos os serviços (Aceita filtro opcional ex: /services?area_id=2)
-  async index(req, res) {
+  // 1. Listar todos os serviços com filtro opcional por area_id
+  async index(req, res, next) {
     try {
-      // Captura o area_id que vem opcionalmente na URL
-      const { area_id } = req.query; 
+      const filters = req.query;
+      const services = await serviceService.listAll(filters);
 
-      let filtro = {};
-      // Se informarem uma área na URL, aplica o filtro na busca do Sequelize
-      if (area_id) {
-        filtro.area_id = area_id;
-      }
-
-      // Busca direta no banco de dados usando o seu Model real
-      const services = await Service.findAll({ where: filtro });
-      
-      return res.status(200).json(services);
-    } catch (error) {
-      console.error('Erro no index de serviços:', error);
-      return res.status(500).json({ error: 'Erro ao buscar serviços.', details: error.message });
-    }
-  },
-
-  // 2. Cadastro em Massa (Bulk Create)
-  async store(req, res) {
-    try {
-      const servicesList = req.body;
-      if (!Array.isArray(servicesList) || servicesList.length === 0) {
-        return res.status(400).json({ error: 'O corpo da requisição deve ser uma lista [] de serviços.' });
-      }
-
-      // Cria todos os registros da lista de uma vez diretamente no banco usando o ORM
-      const criados = await Service.bulkCreate(servicesList);
-
-      return res.status(201).json({
-        message: 'Lista de serviços salva com sucesso!',
-        count: criados.length
+      return res.status(200).json({
+        success: true,
+        count: services.length,
+        data: services
       });
     } catch (error) {
-      console.error('Erro no store de serviços:', error);
-      return res.status(500).json({ error: 'Erro ao salvar a lista de serviços no banco.', details: error.message });
+      next(error);
     }
   },
 
-  // 3. Atualizar um Serviço (PUT)
-  async update(req, res) {
+  // 2. Buscar serviço por ID
+  async show(req, res, next) {
+    try {
+      const { id } = req.params;
+      const service = await serviceService.findById(id);
+
+      return res.status(200).json({
+        success: true,
+        data: service
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 3. Criar um único serviço
+  async store(req, res, next) {
+    try {
+      const { area_id, nome_servico, preco, duracao } = req.body;
+
+      // Validação básica
+      if (!nome_servico || !preco || !duracao) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome do serviço, preço e duração são obrigatórios.'
+        });
+      }
+
+      const newService = await serviceService.create({
+        area_id,
+        nome_servico,
+        preco,
+        duracao
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Serviço criado com sucesso!',
+        data: newService
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 4. Cadastro em Massa (Bulk Create)
+  async bulkCreate(req, res, next) {
+    try {
+      const servicesList = req.body;
+
+      if (!Array.isArray(servicesList) || servicesList.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'O corpo da requisição deve ser uma lista [] de serviços.'
+        });
+      }
+
+      const createdServices = await serviceService.bulkCreate(servicesList);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Lista de serviços salva com sucesso!',
+        count: createdServices.length,
+        data: createdServices
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 5. Atualizar um serviço
+  async update(req, res, next) {
     try {
       const { id } = req.params;
       const { area_id, nome_servico, preco, duracao } = req.body;
 
-      // Busca o serviço pelo ID antes de tentar atualizar
-      const service = await Service.findByPk(id);
-      
-      if (!service) {
-        return res.status(404).json({ error: 'Serviço não encontrado.' });
-      }
-
-      // Atualiza os campos enviados na requisição
-      await service.update({ area_id, nome_servico, preco, duracao });
+      const service = await serviceService.update(id, {
+        area_id,
+        nome_servico,
+        preco,
+        duracao
+      });
 
       return res.status(200).json({
-        message: 'Serviço updated com sucesso!',
+        success: true,
+        message: 'Serviço atualizado com sucesso!',
         data: service
       });
     } catch (error) {
-      console.error('Erro no update de serviços:', error);
-      return res.status(400).json({ error: 'Erro ao atualizar o serviço.', details: error.message });
+      next(error);
     }
   },
 
-  // 4. Excluir um Serviço (DELETE)
-  async delete(req, res) {
+  // 6. Deletar um serviço
+  async delete(req, res, next) {
     try {
       const { id } = req.params;
-      
-      // Busca o serviço para checar se ele existe antes de deletar
-      const service = await Service.findByPk(id);
+      await serviceService.delete(id);
 
-      if (!service) {
-        return res.status(404).json({ error: 'Serviço não encontrado.' });
-      }
-
-      // Deleta o registro do banco de dados
-      await service.destroy();
-
-      return res.status(200).json({ message: 'Serviço excluído com sucesso!' });
+      return res.status(200).json({
+        success: true,
+        message: 'Serviço excluído com sucesso!'
+      });
     } catch (error) {
-      console.error('Erro no delete de serviços:', error);
-      return res.status(500).json({ error: 'Erro ao excluir o serviço.', details: error.message });
+      next(error);
     }
   }
 };
-
-  

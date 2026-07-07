@@ -1,0 +1,143 @@
+### AgendaPro Beauty - Test REST API
+### Use a extensão REST Client (humao.rest-client) no VS Code para executar
+
+@baseUrl = http://localhost:3000
+
+### ========== HEALTH CHECK ==========
+GET {{baseUrl}}/health
+
+### ========== PROFISSIONAIS ==========
+
+### Listar todos os profissionais
+GET {{baseUrl}}/professionals
+
+### Buscar profissional por ID
+GET {{baseUrl}}/professionals/1
+
+### Buscar profissionais por especialidade
+GET {{baseUrl}}/professionals/specialty?especialidade=Cabeleireiro
+
+### Criar novo profissional
+POST {{baseUrl}}/professionals
+Content-Type: application/json
+
+{
+  "nome": "João Silva",
+  "especialidade": "Cabeleireiro",
+  "telefone": "11912345678"
+}
+
+### Atualizar profissional
+PUT {{baseUrl}}/professionals/1
+Content-Type: application/json
+
+{
+  "nome": "Natanael Atualizado",
+  "especialidade": "Cabeleireiro e Visagista",
+  "telefone": "54999999999"
+}
+
+### ========== SERVIÇOS ==========
+
+### Listar todos os serviços
+GET {{baseUrl}}/services
+
+### Listar serviços por area_id
+GET {{baseUrl}}/services?area_id=1
+
+### Buscar serviço por ID
+GET {{baseUrl}}/services/1
+
+### Criar novo serviço
+POST {{baseUrl}}/services
+Content-Type: application/json
+
+{
+  "area_id": 1,
+  "nome_servico": "Corte Premium",
+  "preco": 60,
+  "duracao": 45
+}
+
+### Criar múltiplos serviços (bulk)
+POST {{baseUrl}}/services/bulk
+Content-Type: application/json
+
+[
+  {
+    "area_id": 1,
+    "nome_servico": "Hidratação Capilar",
+    "preco": 80,
+    "duracao": 50
+  },
+  {
+    "area_id": 1,
+    "nome_servico": "Progressiva",
+    "preco": 150,
+    "duracao": 120
+  }
+]
+
+### Atualizar serviço
+PUT {{baseUrl}}/services/1
+Content-Type: application/json
+
+{
+  "area_id": 1,
+  "nome_servico": "Corte de Cabelo Masculino Premium",
+  "preco": 50,
+  "duracao": 35
+}
+
+### Deletar serviço
+DELETE {{baseUrl}}/services/1
+
+### ========== AGENDAMENTOS ==========
+
+### Listar todos os agendamentos
+GET {{baseUrl}}/appointments
+
+### Listar agendamentos por status
+GET {{baseUrl}}/appointments?status=agendado
+
+### Buscar agendamento por ID
+GET {{baseUrl}}/appointments/1
+
+### Listar agendamentos de um profissional
+GET {{baseUrl}}/appointments/professional/1
+
+### Agendar cabeleireiro às 9:00 (ESTE AGENDAMENTO!)
+POST {{baseUrl}}/appointments
+Content-Type: application/json
+
+{
+  "professional_id": 1,
+  "service_id": 1,
+  "data_hora": "2026-07-07T09:00:00",
+  "status": "agendado"
+}
+
+### Agendar outro profissional
+POST {{baseUrl}}/appointments
+Content-Type: application/json
+
+{
+  "professional_id": 4,
+  "service_id": 7,
+  "data_hora": "2026-07-08T14:30:00",
+  "status": "agendado"
+}
+
+### Atualizar agendamento
+PUT {{baseUrl}}/appointments/1
+Content-Type: application/json
+
+{
+  "professional_id": 1,
+  "service_id": 1,
+  "data_hora": "2026-07-07T10:00:00",
+  "status": "confirmado"
+}
+
+### Deletar agendamento
+DELETE {{baseUrl}}/appointments/1

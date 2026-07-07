@@ -27,6 +27,9 @@ fs
     );
   })
   .forEach(file => {
+    // ESSA LINHA VAI DENUNCIAR O CULPADO NO TERMINAL:
+    console.log("👉 Tentando carregar o arquivo:", file);
+
     const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
   });

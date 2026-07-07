@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-// Importação correta com o "p" minúsculo conforme a sua pasta
-const professionalController = require('../controllers/professionalController');
+const professionalController = require('../controllers/ProfessionalController');
 
-// Rotas limpas (o /professionals já é injetado pelo server.js)
-router.get('/', professionalController.index);
-router.post('/', professionalController.store);
-router.put('/:id', professionalController.update);
-router.delete('/:id', professionalController.delete);
+// Rotas de profissionais
+router.get('/', professionalController.index);                          // Listar todos
+router.get('/specialty', professionalController.findBySpecialty);      // Buscar por especialidade
+router.get('/:id', professionalController.show);                        // Buscar por ID
+router.post('/', professionalController.store);                         // Criar novo
+router.put('/:id', professionalController.update);                      // Atualizar
+router.delete('/:id', professionalController.delete);                   // Deletar
 
 module.exports = router;

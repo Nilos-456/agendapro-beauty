@@ -32,21 +32,93 @@ A arquitetura do ecossistema, os mapeamentos relacionais e as regras estritas de
 
 ---
 
-## Arquitetura do Projeto (Padrão MVC)
+## Arquitetura do Projeto (Padrão MVC + Serviços)
 
 ```text
 agendapro-beauty/
+├── config/               # Configurações de Banco de Dados
 ├── models/               # Modelos do Sequelize (Abstração das Tabelas)
 ├── migrations/           # Histórico de Evolução do Banco de Dados
+├── .env                  # Variáveis de ambiente (não commitar)
+├── .env.example          # Template de variáveis de ambiente
 └── src/
-    ├── config/           # Parâmetros de Conexão (PostgreSQL)
-    ├── controllers/      # Lógica de Negócio e Validações
+    ├── controllers/      # Controladores HTTP (requisição/resposta)
     ├── routes/           # Roteamento e Exposição dos Endpoints
-    └── app.js            # Inicialização e Middlewares da API
+    ├── services/         # Lógica de negócio centralizada
+    ├── middleware/       # Validações e tratamento de erros
+    ├── utils/            # Funções auxiliares reutilizáveis
+    └── server.js         # Inicialização da API
 
-    
-    
-    ## Documentação Técnico da API (Endpoints)
+```
+
+### Componentes Principais:
+
+- **Models:** Definição de entidades (Professional, Service, Appointment, User)
+- **Controllers:** Responsáveis por receber requisições HTTP e chamar os serviços
+- **Services:** Concentram a lógica de negócio e orquestração entre models
+- **Routes:** Definem os endpoints da API
+- **Middleware:** Tratamento centralizado de erros e validações
+- **Utils:** Funções utilitárias (formatação de datas, respostas padronizadas)
+
+---
+
+## Configuração do Ambiente
+
+### 1. Instalar Dependências
+
+```bash
+npm install
+```
+
+### 2. Configurar Variáveis de Ambiente
+
+Copie o arquivo `.env.example` para `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Edite o arquivo `.env` com suas credenciais do PostgreSQL:
+
+```env
+NODE_ENV=development
+PORT=3000
+DB_USERNAME=postgres
+DB_PASSWORD=sua_senha
+DB_DATABASE=agendapro_beauty
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DIALECT=postgres
+JWT_SECRET=seu_secret_aqui
+```
+
+### 3. Executar Migrações
+
+```bash
+npx sequelize-cli db:migrate
+```
+
+### 4. Popular Banco (Opcional)
+
+```bash
+npx sequelize-cli db:seed:all
+```
+
+### 5. Iniciar Servidor
+
+**Desenvolvimento (com nodemon):**
+```bash
+npm run dev
+```
+
+**Produção:**
+```bash
+node src/server.js
+```
+
+---
+
+## Documentação Técnico da API (Endpoints)
 
 ### Módulo de Profissionais
 
