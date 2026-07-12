@@ -37,19 +37,7 @@ Content-Type: application/json
   "telefone": "54999999999"
 }
 
-### ========== SERVIÇOS ==========
 
-### Listar todos os serviços
-GET {{baseUrl}}/services
-
-### Listar serviços por area_id
-GET {{baseUrl}}/services?area_id=1
-
-### Buscar serviço por ID
-GET {{baseUrl}}/services/1
-
-### Criar novo serviço
-POST {{baseUrl}}/services
 Content-Type: application/json
 
 {
@@ -89,31 +77,16 @@ Content-Type: application/json
   "duracao": 35
 }
 
-### Deletar serviço
-DELETE {{baseUrl}}/services/1
 
-### ========== AGENDAMENTOS ==========
 
-### Listar todos os agendamentos
-GET {{baseUrl}}/appointments
-
-### Listar agendamentos por status
-GET {{baseUrl}}/appointments?status=agendado
-
-### Buscar agendamento por ID
-GET {{baseUrl}}/appointments/1
-
-### Listar agendamentos de um profissional
-GET {{baseUrl}}/appointments/professional/1
-
-### Agendar cabeleireiro às 9:00 (ESTE AGENDAMENTO!)
+### Agendar cabeleireiro
 POST {{baseUrl}}/appointments
 Content-Type: application/json
 
 {
-  "professional_id": 1,
-  "service_id": 1,
-  "data_hora": "2026-07-07T09:00:00",
+  "professional_id": 3,
+  "service_id": 2,
+  "data_hora": "2026-07-07T08:00:00",
   "status": "agendado"
 }
 
