@@ -6,6 +6,7 @@ const professionalRoutes = require('./routes/professionalRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const agendaRoutes = require('./routes/agendaRoutes');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.get('/health', (req, res) => {
 app.use('/professionals', professionalRoutes);
 app.use('/services', serviceRoutes);
 app.use('/appointments', appointmentRoutes);
+app.use(agendaRoutes);
 
 // Middleware de tratamento de erros (deve ser o último)
 app.use(errorHandler);
