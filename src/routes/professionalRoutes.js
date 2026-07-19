@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const professionalController = require('../controllers/ProfessionalController');
+const auth = require('../middleware/authMiddleware');
+const admin = require('../middleware/adminMiddleware');
 
 /**
  * @swagger
@@ -101,7 +103,7 @@ router.get('/:id', professionalController.show);
  *       400:
  *         description: Campos obrigatórios faltando
  */
-router.post('/', professionalController.store);
+router.post('/', auth, admin, professionalController.store);
 
 /**
  * @swagger
@@ -134,7 +136,7 @@ router.post('/', professionalController.store);
  *       404:
  *         description: Profissional não encontrado
  */
-router.put('/:id', professionalController.update);
+router.put('/:id', auth, admin, professionalController.update);
 
 /**
  * @swagger
@@ -154,6 +156,6 @@ router.put('/:id', professionalController.update);
  *       404:
  *         description: Profissional não encontrado
  */
-router.delete('/:id', professionalController.delete);
+router.delete('/:id', auth, admin, professionalController.delete);
 
 module.exports = router;

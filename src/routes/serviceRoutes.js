@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const serviceController = require('../controllers/ServiceController');
+const auth = require('../middleware/authMiddleware');
+const admin = require('../middleware/adminMiddleware');
 
 /**
  * @swagger
@@ -86,7 +88,7 @@ router.get('/:id', serviceController.show);
  *       400:
  *         description: Formato inválido
  */
-router.post('/bulk', serviceController.bulkCreate);
+router.post('/bulk', auth, admin, serviceController.bulkCreate);
 
 /**
  * @swagger
@@ -123,7 +125,7 @@ router.post('/bulk', serviceController.bulkCreate);
  *       400:
  *         description: Campos obrigatórios faltando
  */
-router.post('/', serviceController.store);
+router.post('/', auth, admin, serviceController.store);
 
 /**
  * @swagger
@@ -158,7 +160,7 @@ router.post('/', serviceController.store);
  *       404:
  *         description: Serviço não encontrado
  */
-router.put('/:id', serviceController.update);
+router.put('/:id', auth, admin, serviceController.update);
 
 /**
  * @swagger
@@ -178,6 +180,6 @@ router.put('/:id', serviceController.update);
  *       404:
  *         description: Serviço não encontrado
  */
-router.delete('/:id', serviceController.delete);
+router.delete('/:id', auth, admin, serviceController.delete);
 
 module.exports = router;

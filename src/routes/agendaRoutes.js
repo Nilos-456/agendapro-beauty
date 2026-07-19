@@ -4,6 +4,8 @@ const router = express.Router();
 const HourWorkController = require('../controllers/HourWorkController');
 const BlockedHourController = require('../controllers/BlockedHourController');
 const agendaController = require('../controllers/agendaController');
+const auth = require('../middleware/authMiddleware');
+const admin = require('../middleware/adminMiddleware');
 
 /**
  * @swagger
@@ -48,7 +50,7 @@ const agendaController = require('../controllers/agendaController');
  *       404:
  *         description: Profissional não encontrado
  */
-router.post('/agenda/hours', HourWorkController.store);
+router.post('/agenda/hours', auth, admin, HourWorkController.store);
 
 /**
  * @swagger
@@ -92,7 +94,7 @@ router.post('/agenda/hours', HourWorkController.store);
  *       404:
  *         description: Profissional não encontrado
  */
-router.post('/agenda/blocks', BlockedHourController.store);
+router.post('/agenda/blocks', auth, admin, BlockedHourController.store);
 
 /**
  * @swagger
