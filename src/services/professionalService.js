@@ -1,5 +1,5 @@
 // Camada de serviços para lógica de negócio de profissionais
-const { Professional } = require('../../models');
+const { Professional, HourWork } = require('../../models');
 
 class ProfessionalService {
   /**
@@ -56,6 +56,16 @@ class ProfessionalService {
         telefone,
         ativo: ativo !== undefined ? ativo : true
       });
+
+      // Cadastra automaticamente o expediente padrão: Segunda (1) a Sábado (6), das 08h às 18h
+      for (let day = 1; day <= 6; day++) {
+        await HourWork.create({
+          professional_id: professional.id,
+          dia_semana: day,
+          hora_inicio: '08:00',
+          hora_fim: '18:00'
+        });
+      }
 
       return professional;
     } catch (error) {
