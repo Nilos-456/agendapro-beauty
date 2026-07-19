@@ -237,6 +237,24 @@ select option {
   background: rgba(255, 255, 255, 0.15);
 }
 
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-danger) 0%, #F87171 100%);
+  color: #FFF;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+}
+
+.btn-danger:hover {
+  opacity: 0.95;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
 .btn-block {
   width: 100%;
 }

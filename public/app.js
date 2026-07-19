@@ -273,9 +273,7 @@ async function loadAppointments() {
       if (app.status === 'agendado' || app.status === 'confirmado') {
         actionButtons = `
           <button class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${app.id}, ${app.professional_id}, ${app.service_id}, '${app.data_hora.split('T')[0]}')">Reagendar</button>
-          <button class="btn-icon" title="Cancelar Agendamento" onclick="cancelAppointment(${app.id})">
-            <i data-lucide="x"></i>
-          </button>
+          <button class="btn btn-danger btn-sm" onclick="cancelAppointment(${app.id})">Cancelar</button>
         `;
       }
 
