@@ -4,7 +4,8 @@ module.exports = {
   // 1. Listar todos os profissionais ativos
   async index(req, res, next) {
     try {
-      const professionals = await professionalService.listAll();
+      const filters = req.query;
+      const professionals = await professionalService.listAll(filters);
       return res.status(200).json({
         success: true,
         count: professionals.length,

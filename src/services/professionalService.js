@@ -5,11 +5,19 @@ class ProfessionalService {
   /**
    * Listar todos os profissionais
    */
-  async listAll() {
+  async listAll(filters = {}) {
     try {
-      const professionals = await Professional.findAll({
-        where: { ativo: true }
-      });
+      const where = {};
+
+      if (filters.ativo !== undefined) {
+        if (filters.ativo !== 'all') {
+          where.ativo = filters.ativo === 'true' || filters.ativo === true;
+        }
+      } else {
+        where.ativo = true;
+      }
+
+      const professionals = await Professional.findAll({ where });
       return professionals;
     } catch (error) {
       throw new Error(`Erro ao listar profissionais: ${error.message}`);

@@ -662,7 +662,7 @@ async function loadAdminProfessionals() {
   try {
     adminProfessionalsTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Buscando profissionais...</td></tr>';
     
-    const res = await fetch(`${baseUrl}/professionals`);
+    const res = await fetch(`${baseUrl}/professionals?ativo=all`);
     const json = await res.json();
     
     adminProfessionalsTbody.innerHTML = '';
