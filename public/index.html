@@ -85,8 +85,14 @@
         </div>
       </header>
 
-      <!-- Conteúdo Principal do Painel -->
-      <div class="dashboard-content">
+      <!-- Abas de Navegação (para Admins) -->
+      <div class="dashboard-tabs-container hidden" id="admin-nav-tabs">
+        <button class="tab-btn active" id="tab-client-view"><i data-lucide="calendar"></i> Minha Agenda</button>
+        <button class="tab-btn" id="tab-admin-view"><i data-lucide="settings"></i> Painel do Admin</button>
+      </div>
+
+      <!-- Conteúdo Principal do Painel (Cliente) -->
+      <div class="dashboard-content" id="client-view">
         
         <!-- Coluna Esquerda: Listagem de Agendamentos -->
         <section class="appointments-section glass-panel">
@@ -145,6 +151,65 @@
         </section>
 
       </div>
+
+      <!-- Conteúdo Principal do Painel (Admin) -->
+      <div class="admin-dashboard-layout hidden" id="admin-view">
+        <div class="admin-tabs-nav glass-panel">
+          <button class="admin-tab-btn active" id="tab-manage-professionals"><i data-lucide="users"></i> Profissionais</button>
+          <button class="admin-tab-btn" id="tab-manage-services"><i data-lucide="sparkles"></i> Serviços</button>
+        </div>
+
+        <!-- Gerenciar Profissionais -->
+        <div class="admin-panel active glass-panel" id="panel-professionals">
+          <div class="section-header">
+            <h2><i data-lucide="users"></i> Gerenciar Profissionais</h2>
+            <button class="btn btn-primary btn-sm" id="btn-add-professional"><i data-lucide="plus"></i> Novo Profissional</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Especialidade</th>
+                  <th>Telefone</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="admin-professionals-tbody">
+                <!-- Inserido dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Gerenciar Serviços -->
+        <div class="admin-panel hidden glass-panel" id="panel-services">
+          <div class="section-header">
+            <h2><i data-lucide="sparkles"></i> Gerenciar Serviços</h2>
+            <button class="btn btn-primary btn-sm" id="btn-add-service"><i data-lucide="plus"></i> Novo Serviço</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome do Serviço</th>
+                  <th>Preço</th>
+                  <th>Duração</th>
+                  <th>Área ID</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="admin-services-tbody">
+                <!-- Inserido dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -182,6 +247,79 @@
         <button class="btn btn-secondary" id="cancel-reschedule-btn">Cancelar</button>
         <button class="btn btn-primary" id="confirm-reschedule-btn" disabled>Confirmar Alteração</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PROFISSIONAL (ADICIONAR / EDITAR) -->
+  <div id="professional-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3 id="professional-modal-title"><i data-lucide="user-plus"></i> Novo Profissional</h3>
+        <button class="btn-icon" id="close-prof-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <form id="professional-form">
+        <div class="modal-body">
+          <input type="hidden" id="prof-form-id">
+          <div class="form-group">
+            <label for="prof-form-nome"><i data-lucide="user"></i> Nome</label>
+            <input type="text" id="prof-form-nome" required placeholder="Nome do profissional">
+          </div>
+          <div class="form-group">
+            <label for="prof-form-especialidade"><i data-lucide="award"></i> Especialidade</label>
+            <input type="text" id="prof-form-especialidade" required placeholder="Ex: Cabeleireiro, Manicure">
+          </div>
+          <div class="form-group">
+            <label for="prof-form-telefone"><i data-lucide="phone"></i> Telefone</label>
+            <input type="text" id="prof-form-telefone" required placeholder="Ex: 11988887777">
+          </div>
+          <div class="form-group checkbox-container">
+            <label for="prof-form-ativo" style="flex-direction: row; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="prof-form-ativo" checked style="width: auto;"> Ativo
+            </label>
+          </div>
+          <div id="prof-form-alert" class="alert hidden"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-prof-btn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="save-prof-btn">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE SERVIÇO (ADICIONAR / EDITAR) -->
+  <div id="service-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3 id="service-modal-title"><i data-lucide="sparkles"></i> Novo Serviço</h3>
+        <button class="btn-icon" id="close-serv-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <form id="service-form">
+        <div class="modal-body">
+          <input type="hidden" id="serv-form-id">
+          <div class="form-group">
+            <label for="serv-form-nome"><i data-lucide="tag"></i> Nome do Serviço</label>
+            <input type="text" id="serv-form-nome" required placeholder="Ex: Corte de Cabelo Premium">
+          </div>
+          <div class="form-group">
+            <label for="serv-form-preco"><i data-lucide="dollar-sign"></i> Preço (R$)</label>
+            <input type="number" id="serv-form-preco" required step="0.01" min="0" placeholder="Ex: 60.00">
+          </div>
+          <div class="form-group">
+            <label for="serv-form-duracao"><i data-lucide="clock"></i> Duração (minutos)</label>
+            <input type="number" id="serv-form-duracao" required min="1" placeholder="Ex: 45">
+          </div>
+          <div class="form-group">
+            <label for="serv-form-area"><i data-lucide="layout"></i> Área ID</label>
+            <input type="number" id="serv-form-area" required min="0" placeholder="Ex: 1">
+          </div>
+          <div id="serv-form-alert" class="alert hidden"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-serv-btn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="save-serv-btn">Salvar</button>
+        </div>
+      </form>
     </div>
   </div>
 

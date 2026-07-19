@@ -1,21 +1,39 @@
 const baseUrl = ''; // URL relativa já que servimos os arquivos na mesma porta
 
-// Elementos do DOM
+// Elementos do DOM - Telas
 const authScreen = document.getElementById('auth-screen');
 const dashboardScreen = document.getElementById('dashboard-screen');
 const authSubtitle = document.getElementById('auth-subtitle');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
-const switchToRegister = document.getElementById('switchToRegister');
-const switchToLogin = document.getElementById('switchToLogin');
 const authAlert = document.getElementById('auth-alert');
 
+// Elementos do DOM - Cabeçalho
 const displayUserName = document.getElementById('display-user-name');
 const avatarLetters = document.getElementById('avatar-letters');
 const logoutBtn = document.getElementById('logout-btn');
 const refreshAppointments = document.getElementById('refresh-appointments');
 const appointmentsContainer = document.getElementById('appointments-container');
 
+// Elementos do DOM - Navegação Admin
+const adminNavTabs = document.getElementById('admin-nav-tabs');
+const tabClientView = document.getElementById('tab-client-view');
+const tabAdminView = document.getElementById('tab-admin-view');
+const clientView = document.getElementById('client-view');
+const adminView = document.getElementById('admin-view');
+
+const tabManageProfessionals = document.getElementById('tab-manage-professionals');
+const tabManageServices = document.getElementById('tab-manage-services');
+const panelProfessionals = document.getElementById('panel-professionals');
+const panelServices = document.getElementById('panel-services');
+
+const adminProfessionalsTbody = document.getElementById('admin-professionals-tbody');
+const adminServicesTbody = document.getElementById('admin-services-tbody');
+
+const btnAddProfessional = document.getElementById('btn-add-professional');
+const btnAddService = document.getElementById('btn-add-service');
+
+// Elementos do DOM - Formulário de Agendamento Cliente
 const bookingForm = document.getElementById('booking-form');
 const bookingProfessional = document.getElementById('booking-professional');
 const bookingService = document.getElementById('booking-service');
@@ -26,7 +44,7 @@ const selectedSlotTime = document.getElementById('selected-slot-time');
 const confirmBookingBtn = document.getElementById('confirm-booking-btn');
 const bookingAlert = document.getElementById('booking-alert');
 
-// Elementos do Modal de Reagendamento
+// Elementos do DOM - Modal de Reagendamento
 const rescheduleModal = document.getElementById('reschedule-modal');
 const rescheduleAppId = document.getElementById('reschedule-appointment-id');
 const rescheduleProfId = document.getElementById('reschedule-professional-id');
@@ -40,6 +58,32 @@ const cancelRescheduleBtn = document.getElementById('cancel-reschedule-btn');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const rescheduleAlert = document.getElementById('reschedule-alert');
 
+// Elementos do DOM - Modal de Profissional CRUD
+const professionalModal = document.getElementById('professional-modal');
+const professionalModalTitle = document.getElementById('professional-modal-title');
+const closeProfModalBtn = document.getElementById('close-prof-modal-btn');
+const professionalForm = document.getElementById('professional-form');
+const profFormId = document.getElementById('prof-form-id');
+const profFormNome = document.getElementById('prof-form-nome');
+const profFormEspecialidade = document.getElementById('prof-form-especialidade');
+const profFormTelefone = document.getElementById('prof-form-telefone');
+const profFormAtivo = document.getElementById('prof-form-ativo');
+const profFormAlert = document.getElementById('prof-form-alert');
+const cancelProfBtn = document.getElementById('cancel-prof-btn');
+
+// Elementos do DOM - Modal de Serviço CRUD
+const serviceModal = document.getElementById('service-modal');
+const serviceModalTitle = document.getElementById('service-modal-title');
+const closeServModalBtn = document.getElementById('close-serv-modal-btn');
+const serviceForm = document.getElementById('service-form');
+const servFormId = document.getElementById('serv-form-id');
+const servFormNome = document.getElementById('serv-form-nome');
+const servFormPreco = document.getElementById('serv-form-preco');
+const servFormDuracao = document.getElementById('serv-form-duracao');
+const servFormArea = document.getElementById('serv-form-area');
+const servFormAlert = document.getElementById('serv-form-alert');
+const cancelServBtn = document.getElementById('cancel-serv-btn');
+
 // Estado da Aplicação
 let currentUser = null;
 let token = null;
@@ -51,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDateLimits();
   setupBookingFormListeners();
   setupModalListeners();
+  setupAdminListeners();
 });
 
 // Configurar limites de data mínima (não permitir datas passadas)
@@ -89,6 +134,10 @@ function clearAlerts() {
   bookingAlert.innerText = '';
   rescheduleAlert.classList.add('hidden');
   rescheduleAlert.innerText = '';
+  profFormAlert.classList.add('hidden');
+  profFormAlert.innerText = '';
+  servFormAlert.classList.add('hidden');
+  servFormAlert.innerText = '';
 }
 
 // Verificar se o usuário está logado
@@ -113,7 +162,20 @@ function showDashboard() {
   const initials = currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   avatarLetters.innerText = initials;
   
-  // Carregar dados
+  // Tratar perfil visualmente e habilitar abas administrativas
+  const roleSpan = document.querySelector('.user-role');
+  if (currentUser.role === 'admin' || currentUser.role === 'administrador') {
+    roleSpan.innerText = 'Administrador';
+    adminNavTabs.classList.remove('hidden');
+  } else {
+    roleSpan.innerText = 'Cliente';
+    adminNavTabs.classList.add('hidden');
+  }
+
+  // Garantir que a aba cliente seja a ativa por padrão
+  switchTabToClient();
+
+  // Carregar dados iniciais
   loadDropdowns();
   loadAppointments();
 }
@@ -209,7 +271,7 @@ registerForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Carregar Profissionais e Serviços nos Dropdowns
+// Carregar Profissionais e Serviços nos Dropdowns (Agenda do Cliente)
 async function loadDropdowns() {
   try {
     // 1. Carregar Profissionais
@@ -535,3 +597,315 @@ function setupModalListeners() {
     }
   });
 }
+
+// --- LOGICA DE ADMIN (TABS E CRUD) ---
+
+function setupAdminListeners() {
+  // Alterar Abas Principais
+  tabClientView.addEventListener('click', switchTabToClient);
+  tabAdminView.addEventListener('click', switchTabToAdmin);
+
+  // Alterar Sub-abas de Admin
+  tabManageProfessionals.addEventListener('click', () => switchAdminSubtab('professionals'));
+  tabManageServices.addEventListener('click', () => switchAdminSubtab('services'));
+
+  // Abrir Modais de Adicionar
+  btnAddProfessional.addEventListener('click', () => openProfessionalModal());
+  btnAddService.addEventListener('click', () => openServiceModal());
+
+  // Fechar Modais do Admin
+  closeProfModalBtn.addEventListener('click', closeProfessionalModal);
+  cancelProfBtn.addEventListener('click', closeProfessionalModal);
+  closeServModalBtn.addEventListener('click', closeServiceModal);
+  cancelServBtn.addEventListener('click', closeServiceModal);
+
+  // Enviar formulários de Admin
+  professionalForm.addEventListener('submit', handleProfessionalSubmit);
+  serviceForm.addEventListener('submit', handleServiceSubmit);
+}
+
+function switchTabToClient() {
+  tabAdminView.classList.remove('active');
+  tabClientView.classList.add('active');
+  adminView.classList.add('hidden');
+  clientView.classList.remove('hidden');
+}
+
+function switchTabToAdmin() {
+  tabClientView.classList.remove('active');
+  tabAdminView.classList.add('active');
+  clientView.classList.add('hidden');
+  adminView.classList.remove('hidden');
+  
+  // Carregar dados do admin ao entrar
+  loadAdminProfessionals();
+  loadAdminServices();
+}
+
+function switchAdminSubtab(type) {
+  if (type === 'professionals') {
+    tabManageServices.classList.remove('active');
+    tabManageProfessionals.classList.add('active');
+    panelServices.classList.add('hidden');
+    panelProfessionals.classList.remove('hidden');
+  } else {
+    tabManageProfessionals.classList.remove('active');
+    tabManageServices.classList.add('active');
+    panelProfessionals.classList.add('hidden');
+    panelServices.classList.remove('hidden');
+  }
+}
+
+// --- CRUD PROFISSIONAIS ---
+
+async function loadAdminProfessionals() {
+  try {
+    adminProfessionalsTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Buscando profissionais...</td></tr>';
+    
+    const res = await fetch(`${baseUrl}/professionals`);
+    const json = await res.json();
+    
+    adminProfessionalsTbody.innerHTML = '';
+    if (json.data.length === 0) {
+      adminProfessionalsTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum profissional cadastrado.</td></tr>';
+      return;
+    }
+    
+    json.data.forEach(prof => {
+      const tr = document.createElement('tr');
+      const statusBadge = prof.ativo 
+        ? '<span class="badge badge-confirmado">Ativo</span>'
+        : '<span class="badge badge-cancelado">Inativo</span>';
+        
+      tr.innerHTML = `
+        <td>${prof.id}</td>
+        <td><strong>${prof.nome}</strong></td>
+        <td>${prof.especialidade}</td>
+        <td>${prof.telefone}</td>
+        <td>${statusBadge}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="editProfessional(${prof.id}, '${prof.nome.replace(/'/g, "\\'")}', '${prof.especialidade.replace(/'/g, "\\'")}', '${prof.telefone}', ${prof.ativo})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProfessional(${prof.id})">Excluir</button>
+        </td>
+      `;
+      adminProfessionalsTbody.appendChild(tr);
+    });
+  } catch (error) {
+    adminProfessionalsTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-danger);">Erro ao carregar: ${error.message}</td></tr>`;
+  }
+}
+
+function openProfessionalModal(prof = null) {
+  clearAlerts();
+  professionalForm.reset();
+  
+  if (!prof) {
+    professionalModalTitle.innerText = 'Novo Profissional';
+    profFormId.value = '';
+    profFormAtivo.checked = true;
+  } else {
+    professionalModalTitle.innerText = 'Editar Profissional';
+    profFormId.value = prof.id;
+    profFormNome.value = prof.nome;
+    profFormEspecialidade.value = prof.especialidade;
+    profFormTelefone.value = prof.telefone;
+    profFormAtivo.checked = prof.ativo;
+  }
+  
+  professionalModal.classList.remove('hidden');
+}
+
+function closeProfessionalModal() {
+  professionalModal.classList.add('hidden');
+}
+
+// Handler de Escopo Global (para chamar a partir do inline HTML onclick do table)
+window.editProfessional = (id, nome, especialidade, telefone, ativo) => {
+  openProfessionalModal({ id, nome, especialidade, telefone, ativo });
+};
+
+async function handleProfessionalSubmit(e) {
+  e.preventDefault();
+  clearAlerts();
+
+  const id = profFormId.value;
+  const nome = profFormNome.value;
+  const especialidade = profFormEspecialidade.value;
+  const telefone = profFormTelefone.value;
+  const ativo = profFormAtivo.checked;
+
+  const url = id ? `${baseUrl}/professionals/${id}` : `${baseUrl}/professionals`;
+  const method = id ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ nome, especialidade, telefone, ativo })
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.error || 'Erro ao salvar profissional.');
+    }
+
+    closeProfessionalModal();
+    loadAdminProfessionals();
+    loadDropdowns(); // Recarregar seletores da agenda cliente
+  } catch (error) {
+    profFormAlert.innerText = error.message;
+    profFormAlert.className = 'alert alert-danger';
+    profFormAlert.classList.remove('hidden');
+  }
+}
+
+window.deleteProfessional = async (id) => {
+  if (!confirm(`Deseja realmente excluir o profissional com ID ${id}?`)) return;
+
+  try {
+    const res = await fetch(`${baseUrl}/professionals/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.error || 'Erro ao deletar profissional.');
+    }
+
+    alert('Profissional excluído com sucesso!');
+    loadAdminProfessionals();
+    loadDropdowns();
+  } catch (error) {
+    alert(`Erro ao excluir: ${error.message}`);
+  }
+};
+
+// --- CRUD SERVIÇOS ---
+
+async function loadAdminServices() {
+  try {
+    adminServicesTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Buscando serviços...</td></tr>';
+    
+    const res = await fetch(`${baseUrl}/services`);
+    const json = await res.json();
+    
+    adminServicesTbody.innerHTML = '';
+    if (json.data.length === 0) {
+      adminServicesTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum serviço cadastrado.</td></tr>';
+      return;
+    }
+    
+    json.data.forEach(serv => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${serv.id}</td>
+        <td><strong>${serv.nome_servico}</strong></td>
+        <td>R$ ${parseFloat(serv.preco).toFixed(2)}</td>
+        <td>${serv.duracao} min</td>
+        <td>${serv.area_id}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="editService(${serv.id}, '${serv.nome_servico.replace(/'/g, "\\'")}', ${serv.preco}, ${serv.duracao}, ${serv.area_id})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteService(${serv.id})">Excluir</button>
+        </td>
+      `;
+      adminServicesTbody.appendChild(tr);
+    });
+  } catch (error) {
+    adminServicesTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-danger);">Erro ao carregar: ${error.message}</td></tr>`;
+  }
+}
+
+function openServiceModal(service = null) {
+  clearAlerts();
+  serviceForm.reset();
+  
+  if (!service) {
+    serviceModalTitle.innerText = 'Novo Serviço';
+    servFormId.value = '';
+  } else {
+    serviceModalTitle.innerText = 'Editar Serviço';
+    servFormId.value = service.id;
+    servFormNome.value = service.nome_servico;
+    servFormPreco.value = service.preco;
+    servFormDuracao.value = service.duracao;
+    servFormArea.value = service.area_id;
+  }
+  
+  serviceModal.classList.remove('hidden');
+}
+
+function closeServiceModal() {
+  serviceModal.classList.add('hidden');
+}
+
+window.editService = (id, nome_servico, preco, duracao, area_id) => {
+  openServiceModal({ id, nome_servico, preco, duracao, area_id });
+};
+
+async function handleServiceSubmit(e) {
+  e.preventDefault();
+  clearAlerts();
+
+  const id = servFormId.value;
+  const nome_servico = servFormNome.value;
+  const preco = parseFloat(servFormPreco.value);
+  const duracao = parseInt(servFormDuracao.value);
+  const area_id = parseInt(servFormArea.value);
+
+  const url = id ? `${baseUrl}/services/${id}` : `${baseUrl}/services`;
+  const method = id ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ nome_servico, preco, duracao, area_id })
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.error || 'Erro ao salvar serviço.');
+    }
+
+    closeServiceModal();
+    loadAdminServices();
+    loadDropdowns(); // Recarregar seletores da agenda cliente
+  } catch (error) {
+    servFormAlert.innerText = error.message;
+    servFormAlert.className = 'alert alert-danger';
+    servFormAlert.classList.remove('hidden');
+  }
+}
+
+window.deleteService = async (id) => {
+  if (!confirm(`Deseja realmente excluir o serviço com ID ${id}?`)) return;
+
+  try {
+    const res = await fetch(`${baseUrl}/services/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.error || 'Erro ao deletar serviço.');
+    }
+
+    alert('Serviço excluído com sucesso!');
+    loadAdminServices();
+    loadDropdowns();
+  } catch (error) {
+    alert(`Erro ao excluir: ${error.message}`);
+  }
+};
