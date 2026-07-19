@@ -7,11 +7,18 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const agendaRoutes = require('./routes/agendaRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
+// Servir a pasta estática /public para o frontend
+app.use(express.static('public'));
+
 // OBRIGATÓRIO: Para o Express entender as informações enviadas no cadastro
 app.use(express.json());
+
+// Registrar rotas de autenticação
+app.use('/auth', authRoutes);
 
 // Swagger UI na rota /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {

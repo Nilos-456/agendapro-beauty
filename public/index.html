@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgendaPro Beauty | Agendamento de Serviços</title>
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <div class="app-container">
+    <!-- Efeito de Fundo Decorativo -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- TELA DE AUTENTICAÇÃO (LOGIN / REGISTRO) -->
+    <main id="auth-screen" class="auth-card glass-panel active">
+      <div class="auth-header">
+        <div class="logo">
+          <i data-lucide="scissors" class="logo-icon"></i>
+          <span>AgendaPro <span>Beauty</span></span>
+        </div>
+        <p id="auth-subtitle">Entre na sua conta para agendar um atendimento</p>
+      </div>
+
+      <!-- Formulário de Login -->
+      <form id="login-form" class="auth-form active">
+        <div class="form-group">
+          <label for="login-email"><i data-lucide="mail"></i> E-mail</label>
+          <input type="email" id="login-email" required placeholder="exemplo@gmail.com">
+        </div>
+        <div class="form-group">
+          <label for="login-password"><i data-lucide="lock"></i> Senha</label>
+          <input type="password" id="login-password" required placeholder="Sua senha secreta">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Entrar <i data-lucide="log-in"></i></button>
+        <p class="auth-switch">Não tem uma conta? <a href="#" id="switch-to-register">Cadastre-se</a></p>
+      </form>
+
+      <!-- Formulário de Registro -->
+      <form id="register-form" class="auth-form">
+        <div class="form-group">
+          <label for="register-name"><i data-lucide="user"></i> Nome Completo</label>
+          <input type="text" id="register-name" required placeholder="Como deseja ser chamado">
+        </div>
+        <div class="form-group">
+          <label for="register-email"><i data-lucide="mail"></i> E-mail</label>
+          <input type="email" id="register-email" required placeholder="exemplo@gmail.com">
+        </div>
+        <div class="form-group">
+          <label for="register-password"><i data-lucide="lock"></i> Senha</label>
+          <input type="password" id="register-password" required placeholder="Crie uma senha forte">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Criar Conta <i data-lucide="user-plus"></i></button>
+        <p class="auth-switch">Já tem uma conta? <a href="#" id="switch-to-login">Faça Login</a></p>
+      </form>
+      
+      <div id="auth-alert" class="alert alert-danger hidden"></div>
+    </main>
+
+    <!-- TELA DO DASHBOARD (PAINEL DO CLIENTE) -->
+    <main id="dashboard-screen" class="dashboard-layout hidden">
+      <!-- Barra Superior / Header -->
+      <header class="dashboard-header glass-panel">
+        <div class="logo">
+          <i data-lucide="scissors" class="logo-icon"></i>
+          <span>AgendaPro <span>Beauty</span></span>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar" id="avatar-letters">US</div>
+          <div class="user-info">
+            <span class="user-name" id="display-user-name">Usuário</span>
+            <span class="user-role">Cliente</span>
+          </div>
+          <button id="logout-btn" class="btn-icon" title="Sair da conta">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Conteúdo Principal do Painel -->
+      <div class="dashboard-content">
+        
+        <!-- Coluna Esquerda: Listagem de Agendamentos -->
+        <section class="appointments-section glass-panel">
+          <div class="section-header">
+            <h2><i data-lucide="calendar"></i> Meus Agendamentos</h2>
+            <button id="refresh-appointments" class="btn-text"><i data-lucide="rotate-cw"></i> Atualizar</button>
+          </div>
+          <div class="appointments-list" id="appointments-container">
+            <!-- Renderizado dinamicamente via JS -->
+            <p class="empty-state">Você não possui nenhum agendamento marcado.</p>
+          </div>
+        </section>
+
+        <!-- Coluna Direita: Formulário para Novo Agendamento -->
+        <section class="booking-section glass-panel">
+          <div class="section-header">
+            <h2><i data-lucide="calendar-plus"></i> Novo Agendamento</h2>
+          </div>
+          <form id="booking-form">
+            <!-- Selecionar Profissional -->
+            <div class="form-group">
+              <label for="booking-professional"><i data-lucide="users"></i> Escolha o Profissional</label>
+              <select id="booking-professional" required>
+                <option value="" disabled selected>Carregando profissionais...</option>
+              </select>
+            </div>
+
+            <!-- Selecionar Serviço -->
+            <div class="form-group">
+              <label for="booking-service"><i data-lucide="sparkles"></i> Escolha o Serviço</label>
+              <select id="booking-service" required>
+                <option value="" disabled selected>Carregando serviços...</option>
+              </select>
+            </div>
+
+            <!-- Selecionar Data -->
+            <div class="form-group">
+              <label for="booking-date"><i data-lucide="calendar-days"></i> Data do Atendimento</label>
+              <input type="date" id="booking-date" required>
+            </div>
+
+            <!-- Slots de Horários Livres -->
+            <div class="slots-container hidden" id="availability-section">
+              <label><i data-lucide="clock"></i> Horários Disponíveis</label>
+              <div class="slots-grid" id="slots-grid">
+                <!-- Inseridos via JS -->
+              </div>
+              <input type="hidden" id="selected-slot-time">
+            </div>
+
+            <button type="submit" id="confirm-booking-btn" class="btn btn-primary btn-block" disabled>
+              Confirmar Agendamento <i data-lucide="check"></i>
+            </button>
+          </form>
+          <div id="booking-alert" class="alert hidden"></div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL DE REAGENDAMENTO -->
+  <div id="reschedule-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3><i data-lucide="calendar-days"></i> Reagendar Atendimento</h3>
+        <button class="btn-icon" id="close-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-info">Selecione uma nova data e horário para reagendar o seu atendimento.</p>
+        
+        <input type="hidden" id="reschedule-appointment-id">
+        <input type="hidden" id="reschedule-professional-id">
+        <input type="hidden" id="reschedule-service-id">
+
+        <div class="form-group">
+          <label for="reschedule-date"><i data-lucide="calendar-days"></i> Nova Data</label>
+          <input type="date" id="reschedule-date" required>
+        </div>
+
+        <!-- Slots de Horários Livres no Modal -->
+        <div class="slots-container hidden" id="reschedule-slots-section">
+          <label><i data-lucide="clock"></i> Horários Disponíveis</label>
+          <div class="slots-grid" id="reschedule-slots-grid">
+            <!-- Inseridos via JS -->
+          </div>
+          <input type="hidden" id="reschedule-selected-time">
+        </div>
+
+        <div id="reschedule-alert" class="alert hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-reschedule-btn">Cancelar</button>
+        <button class="btn btn-primary" id="confirm-reschedule-btn" disabled>Confirmar Alteração</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Inicializar os ícones do Lucide
+    lucide.createIcons();
+  </script>
+</body>
+</html>

@@ -19,7 +19,8 @@ module.exports = {
   // 2. Criar novo agendamento
   async store(req, res, next) {
     try {
-      const { professional_id, service_id, user_id, data_hora, status } = req.body;
+      const { professional_id, service_id, data_hora, status } = req.body;
+      const user_id = req.user ? req.user.id : req.body.user_id;
 
       // Validação básica
       if (!professional_id || !service_id || !data_hora) {

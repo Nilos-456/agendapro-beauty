@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointmentController');
+const auth = require('../middleware/authMiddleware');
 
 /**
  * @swagger
@@ -117,7 +118,7 @@ router.get('/:id', appointmentController.show);
  *       404:
  *         description: "Profissional ou Serviço não encontrado"
  */
-router.post('/', appointmentController.store);
+router.post('/', auth, appointmentController.store);
 
 /**
  * @swagger
@@ -153,7 +154,7 @@ router.post('/', appointmentController.store);
  *       404:
  *         description: Agendamento não encontrado
  */
-router.put('/:id', appointmentController.update);
+router.put('/:id', auth, appointmentController.update);
 
 /**
  * @swagger
@@ -173,7 +174,7 @@ router.put('/:id', appointmentController.update);
  *       404:
  *         description: Agendamento não encontrado
  */
-router.delete('/:id', appointmentController.delete);
+router.delete('/:id', auth, appointmentController.delete);
 
 /**
  * @swagger
@@ -215,7 +216,7 @@ router.get('/user/:userId', appointmentController.listByUser);
  *       404:
  *         description: Agendamento não encontrado
  */
-router.post('/:id/cancel', appointmentController.cancel);
+router.post('/:id/cancel', auth, appointmentController.cancel);
 
 /**
  * @swagger
@@ -255,6 +256,6 @@ router.post('/:id/cancel', appointmentController.cancel);
  *       404:
  *         description: Agendamento não encontrado
  */
-router.post('/:id/reschedule', appointmentController.reschedule);
+router.post('/:id/reschedule', auth, appointmentController.reschedule);
 
 module.exports = router;
