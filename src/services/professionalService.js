@@ -36,7 +36,7 @@ class ProfessionalService {
    */
   async create(data) {
     try {
-      const { nome, especialidade, telefone } = data;
+      const { nome, especialidade, telefone, ativo } = data;
 
       if (!nome || !especialidade || !telefone) {
         throw new Error('Nome, especialidade e telefone são obrigatórios');
@@ -46,7 +46,7 @@ class ProfessionalService {
         nome,
         especialidade,
         telefone,
-        ativo: true
+        ativo: ativo !== undefined ? ativo : true
       });
 
       return professional;

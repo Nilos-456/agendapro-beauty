@@ -33,7 +33,7 @@ module.exports = {
   // 3. Criar novo profissional
   async store(req, res, next) {
     try {
-      const { nome, especialidade, telefone } = req.body;
+      const { nome, especialidade, telefone, ativo } = req.body;
 
       // Validação básica
       if (!nome || !especialidade || !telefone) {
@@ -46,7 +46,8 @@ module.exports = {
       const newProfessional = await professionalService.create({
         nome,
         especialidade,
-        telefone
+        telefone,
+        ativo
       });
 
       return res.status(201).json({
@@ -63,12 +64,13 @@ module.exports = {
   async update(req, res, next) {
     try {
       const { id } = req.params;
-      const { nome, especialidade, telefone } = req.body;
+      const { nome, especialidade, telefone, ativo } = req.body;
 
       const professional = await professionalService.update(id, {
         nome,
         especialidade,
-        telefone
+        telefone,
+        ativo
       });
 
       return res.status(200).json({
