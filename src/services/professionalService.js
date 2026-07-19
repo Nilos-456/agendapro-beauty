@@ -1,5 +1,5 @@
 // Camada de serviços para lógica de negócio de profissionais
-const { Professional, HourWork } = require('../../models');
+const { Professional, HourWork, Service } = require('../../models');
 
 class ProfessionalService {
   /**
@@ -65,6 +65,21 @@ class ProfessionalService {
           hora_inicio: '08:00',
           hora_fim: '18:00'
         });
+      }
+
+      // Se a especialidade não existir na tabela de Serviços, adiciona-a automaticamente
+      if (especialidade && especialidade.trim() !== '') {
+        const allServices = await Service.findAll();
+        const match = allServices.find(s => s.nome_servico.trim().toLowerCase() === especialidade.trim().toLowerCase());
+        
+        if (!match) {
+          await Service.create({
+            nome_servico: especialidade.trim(),
+            preco: 50.00, // Preço padrão sugerido
+            duracao: 30,  // Duração padrão sugerida (minutos)
+            area_id: 1    // Área padrão
+          });
+        }
       }
 
       return professional;

@@ -754,6 +754,7 @@ async function handleProfessionalSubmit(e) {
 
     closeProfessionalModal();
     loadAdminProfessionals();
+    loadAdminServices(); // Recarregar tabela de serviços se um novo serviço de especialidade foi criado
     loadDropdowns(); // Recarregar seletores da agenda cliente
   } catch (error) {
     profFormAlert.innerText = error.message;
