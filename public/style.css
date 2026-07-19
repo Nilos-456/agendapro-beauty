@@ -189,6 +189,11 @@ input:focus, select:focus {
   background: rgba(255, 255, 255, 0.08);
 }
 
+select option {
+  background-color: #12101e;
+  color: var(--color-text-main);
+}
+
 /* Botões */
 .btn {
   display: inline-flex;

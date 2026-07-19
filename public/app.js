@@ -294,7 +294,9 @@ async function loadAppointments() {
     });
     
     // Atualizar ícones do Lucide nos novos elementos inseridos
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   } catch (error) {
     appointmentsContainer.innerHTML = `<p class="empty-state text-danger">Erro ao carregar: ${error.message}</p>`;
   }

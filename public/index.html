@@ -187,8 +187,10 @@
 
   <script src="app.js"></script>
   <script>
-    // Inicializar os ícones do Lucide
-    lucide.createIcons();
+    // Inicializar os ícones do Lucide com segurança
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   </script>
 </body>
 </html>
