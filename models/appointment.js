@@ -14,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'service_id', 
         as: 'service' 
       });
+      // Um agendamento pertence a um usuário (cliente)
+      this.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        as: 'user'
+      });
     }
   }
   
@@ -30,6 +35,11 @@ Appointment.init({
       type: DataTypes.INTEGER, 
       allowNull: false,
       field: 'service_id' // Garante que olha para a coluna com underline
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: 'user_id'
     }
   }, {
     sequelize,

@@ -175,4 +175,86 @@ router.put('/:id', appointmentController.update);
  */
 router.delete('/:id', appointmentController.delete);
 
+/**
+ * @swagger
+ * /appointments/user/{userId}:
+ *   get:
+ *     summary: Listar agendamentos de um usuário
+ *     tags: [Agendamentos]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID do usuário
+ *     responses:
+ *       200:
+ *         description: Lista de agendamentos do usuário obtida com sucesso
+ */
+router.get('/user/:userId', appointmentController.listByUser);
+
+/**
+ * @swagger
+ * /appointments/{id}/cancel:
+ *   post:
+ *     summary: Cancelar logicamente um agendamento
+ *     tags: [Agendamentos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID do agendamento
+ *     responses:
+ *       200:
+ *         description: Agendamento cancelado com sucesso
+ *       400:
+ *         description: Antecedência mínima de 2 horas não respeitada ou agendamento já cancelado
+ *       404:
+ *         description: Agendamento não encontrado
+ */
+router.post('/:id/cancel', appointmentController.cancel);
+
+/**
+ * @swagger
+ * /appointments/{id}/reschedule:
+ *   post:
+ *     summary: Reagendar um atendimento (cancelamento do anterior e criação de um novo)
+ *     tags: [Agendamentos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID do agendamento atual a ser reagendado
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               professional_id:
+ *                 type: integer
+ *                 example: 1
+ *               service_id:
+ *                 type: integer
+ *                 example: 1
+ *               data_hora:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2026-07-22T10:00:00"
+ *     responses:
+ *       200:
+ *         description: Agendamento reagendado com sucesso e novo agendamento criado
+ *       400:
+ *         description: Falha nas validações de regras de negócios ou antecedência
+ *       404:
+ *         description: Agendamento não encontrado
+ */
+router.post('/:id/reschedule', appointmentController.reschedule);
+
 module.exports = router;

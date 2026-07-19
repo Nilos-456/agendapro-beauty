@@ -19,7 +19,7 @@ module.exports = {
   // 2. Criar novo agendamento
   async store(req, res, next) {
     try {
-      const { professional_id, service_id, data_hora, status } = req.body;
+      const { professional_id, service_id, user_id, data_hora, status } = req.body;
 
       // Validação básica
       if (!professional_id || !service_id || !data_hora) {
@@ -32,6 +32,7 @@ module.exports = {
       const newAppointment = await appointmentService.create({
         professional_id,
         service_id,
+        user_id,
         data_hora,
         status
       });
@@ -110,6 +111,72 @@ module.exports = {
         data: appointments
       });
     } catch (error) {
+      next(error);
+    }
+  },
+
+  // 7. Listar agendamentos de um usuário específico
+  async listByUser(req, res, next) {
+    try {
+      const { userId } = req.params;
+      const appointments = await appointmentService.listByUser(userId);
+
+      return res.status(200).json({
+        success: true,
+        count: appointments.length,
+        data: appointments
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // 8. Cancelar agendamento (lógico)
+  async cancel(req, res, next) {
+    try {
+      const { id } = req.params;
+      const appointment = await appointmentService.cancel(id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Agendamento cancelado com sucesso!',
+        data: appointment
+      });
+    } catch (error) {
+      if (error.message.includes('não encontrado')) {
+        return res.status(404).json({ success: false, error: error.message });
+      }
+      if (error.message.includes('antecedência') || error.message.includes('passou') || error.message.includes('cancelado')) {
+        return res.status(400).json({ success: false, error: error.message });
+      }
+      next(error);
+    }
+  },
+
+  // 9. Reagendar agendamento
+  async reschedule(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { professional_id, service_id, data_hora } = req.body;
+
+      const newAppointment = await appointmentService.reschedule(id, {
+        professional_id,
+        service_id,
+        data_hora
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Agendamento reagendado com sucesso!',
+        data: newAppointment
+      });
+    } catch (error) {
+      if (error.message.includes('não encontrado')) {
+        return res.status(404).json({ success: false, error: error.message });
+      }
+      if (error.message.includes('antecedência') || error.message.includes('conflito') || error.message.includes('passou') || error.message.includes('bloqueado') || error.message.includes('atende') || error.message.includes('cancelado')) {
+        return res.status(400).json({ success: false, error: error.message });
+      }
       next(error);
     }
   }
