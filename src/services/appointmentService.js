@@ -303,7 +303,7 @@ class AppointmentService {
   /**
    * Cancelamento lógico (mudar status para 'cancelado') com antecedência mínima de 2 horas
    */
-  async cancel(id) {
+  async cancel(id, isAdmin = false) {
     try {
       const appointment = await Appointment.findByPk(id);
       if (!appointment) {
@@ -314,19 +314,21 @@ class AppointmentService {
         throw new Error('Este agendamento já está cancelado');
       }
 
-      // Regra de Negócio: Validar cancelamento com antecedência mínima de 2 horas
-      const agora = new Date();
-      const dataHoraAgendamento = new Date(appointment.data_hora);
+      if (!isAdmin) {
+        // Regra de Negócio: Validar cancelamento com antecedência mínima de 2 horas
+        const agora = new Date();
+        const dataHoraAgendamento = new Date(appointment.data_hora);
 
-      if (dataHoraAgendamento < agora) {
-        throw new Error('Não é possível cancelar um agendamento de uma data ou horário que já passou');
-      }
+        if (dataHoraAgendamento < agora) {
+          throw new Error('Não é possível cancelar um agendamento de uma data ou horário que já passou');
+        }
 
-      // Diferença em minutos
-      const diferencaMinutos = (dataHoraAgendamento - agora) / (1000 * 60);
+        // Diferença em minutos
+        const diferencaMinutos = (dataHoraAgendamento - agora) / (1000 * 60);
 
-      if (diferencaMinutos < 120) { // 120 minutos = 2 horas
-        throw new Error('Regra do Estabelecimento: Cancelamentos só são permitidos com no mínimo 2 horas de antecedência');
+        if (diferencaMinutos < 120) { // 120 minutos = 2 horas
+          throw new Error('Regra do Estabelecimento: Cancelamentos só são permitidos com no mínimo 2 horas de antecedência');
+        }
       }
 
       await appointment.update({ status: 'cancelado' });
@@ -340,7 +342,7 @@ class AppointmentService {
    * Reagendamento: cancela o atual e cria um novo respeitando todas as regras
    * Executado dentro de uma transação para garantir atomicidade.
    */
-  async reschedule(id, data) {
+  async reschedule(id, data, isAdmin = false) {
     const transaction = await Appointment.sequelize.transaction();
     try {
       const appointment = await Appointment.findByPk(id, { transaction });
@@ -352,17 +354,19 @@ class AppointmentService {
         throw new Error('Este agendamento já está cancelado');
       }
 
-      const agora = new Date();
-      const dataHoraAgendamento = new Date(appointment.data_hora);
+      if (!isAdmin) {
+        const agora = new Date();
+        const dataHoraAgendamento = new Date(appointment.data_hora);
 
-      if (dataHoraAgendamento < agora) {
-        throw new Error('Não é possível reagendar um agendamento de uma data ou horário que já passou');
-      }
+        if (dataHoraAgendamento < agora) {
+          throw new Error('Não é possível reagendar um agendamento de uma data ou horário que já passou');
+        }
 
-      // Validar antecedência mínima de 2 horas
-      const diferencaMinutos = (dataHoraAgendamento - agora) / (1000 * 60);
-      if (diferencaMinutos < 120) {
-        throw new Error('Regra do Estabelecimento: Reagendamentos só são permitidos com no mínimo 2 horas de antecedência');
+        // Validar antecedência mínima de 2 horas
+        const diferencaMinutos = (dataHoraAgendamento - agora) / (1000 * 60);
+        if (diferencaMinutos < 120) {
+          throw new Error('Regra do Estabelecimento: Reagendamentos só são permitidos com no mínimo 2 horas de antecedência');
+        }
       }
 
       // 1. Cancelar logicamente o agendamento atual

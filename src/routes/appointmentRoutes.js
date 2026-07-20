@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointmentController');
 const auth = require('../middleware/authMiddleware');
+const admin = require('../middleware/adminMiddleware');
 
 /**
  * @swagger
@@ -37,7 +38,7 @@ const auth = require('../middleware/authMiddleware');
  *                   items:
  *                     $ref: '#/components/schemas/Appointment'
  */
-router.get('/', appointmentController.index);
+router.get('/', auth, admin, appointmentController.index);
 
 /**
  * @swagger

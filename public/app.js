@@ -24,11 +24,15 @@ const adminView = document.getElementById('admin-view');
 
 const tabManageProfessionals = document.getElementById('tab-manage-professionals');
 const tabManageServices = document.getElementById('tab-manage-services');
+const tabManageAppointments = document.getElementById('tab-manage-appointments');
 const panelProfessionals = document.getElementById('panel-professionals');
 const panelServices = document.getElementById('panel-services');
+const panelAppointments = document.getElementById('panel-appointments');
 
 const adminProfessionalsTbody = document.getElementById('admin-professionals-tbody');
 const adminServicesTbody = document.getElementById('admin-services-tbody');
+const adminAppointmentsTbody = document.getElementById('admin-appointments-tbody');
+const refreshAdminAppointments = document.getElementById('refresh-admin-appointments');
 
 const btnAddProfessional = document.getElementById('btn-add-professional');
 const btnAddService = document.getElementById('btn-add-service');
@@ -590,6 +594,9 @@ function setupModalListeners() {
       alert('Atendimento reagendado com sucesso!');
       closeModal();
       loadAppointments();
+      if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'administrador')) {
+        loadAdminAppointments();
+      }
     } catch (error) {
       rescheduleAlert.innerText = error.message;
       rescheduleAlert.className = 'alert alert-danger';
@@ -608,6 +615,8 @@ function setupAdminListeners() {
   // Alterar Sub-abas de Admin
   tabManageProfessionals.addEventListener('click', () => switchAdminSubtab('professionals'));
   tabManageServices.addEventListener('click', () => switchAdminSubtab('services'));
+  tabManageAppointments.addEventListener('click', () => switchAdminSubtab('appointments'));
+  refreshAdminAppointments.addEventListener('click', loadAdminAppointments);
 
   // Abrir Modais de Adicionar
   btnAddProfessional.addEventListener('click', () => openProfessionalModal());
@@ -640,19 +649,28 @@ function switchTabToAdmin() {
   // Carregar dados do admin ao entrar
   loadAdminProfessionals();
   loadAdminServices();
+  loadAdminAppointments();
 }
 
 function switchAdminSubtab(type) {
+  tabManageProfessionals.classList.remove('active');
+  tabManageServices.classList.remove('active');
+  tabManageAppointments.classList.remove('active');
+
+  panelProfessionals.classList.add('hidden');
+  panelServices.classList.add('hidden');
+  panelAppointments.classList.add('hidden');
+
   if (type === 'professionals') {
-    tabManageServices.classList.remove('active');
     tabManageProfessionals.classList.add('active');
-    panelServices.classList.add('hidden');
     panelProfessionals.classList.remove('hidden');
-  } else {
-    tabManageProfessionals.classList.remove('active');
+  } else if (type === 'services') {
     tabManageServices.classList.add('active');
-    panelProfessionals.classList.add('hidden');
     panelServices.classList.remove('hidden');
+  } else if (type === 'appointments') {
+    tabManageAppointments.classList.add('active');
+    panelAppointments.classList.remove('hidden');
+    loadAdminAppointments();
   }
 }
 
@@ -908,5 +926,86 @@ window.deleteService = async (id) => {
     loadDropdowns();
   } catch (error) {
     alert(`Erro ao excluir: ${error.message}`);
+  }
+};
+
+// --- AGENDA GERAL DO SALÃO (ADMIN) ---
+
+async function loadAdminAppointments() {
+  try {
+    adminAppointmentsTbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Buscando agendamentos...</td></tr>';
+
+    const res = await fetch(`${baseUrl}/appointments`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const json = await res.json();
+
+    adminAppointmentsTbody.innerHTML = '';
+    if (json.data.length === 0) {
+      adminAppointmentsTbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum agendamento registrado.</td></tr>';
+      return;
+    }
+
+    json.data.forEach(app => {
+      const tr = document.createElement('tr');
+      
+      const formattedDate = new Date(app.data_hora).toLocaleString('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      });
+
+      const badgeClass = `badge badge-${app.status}`;
+      
+      let actionButtons = '';
+      if (app.status === 'agendado' || app.status === 'confirmado') {
+        actionButtons = `
+          <button class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${app.id}, ${app.professional_id}, ${app.service_id}, '${app.data_hora.split('T')[0]}')">Reagendar</button>
+          <button class="btn btn-danger btn-sm" onclick="adminCancelAppointment(${app.id})">Cancelar</button>
+        `;
+      }
+
+      tr.innerHTML = `
+        <td>${app.id}</td>
+        <td><strong>${app.user.name}</strong><br><small style="color: var(--color-text-muted);">${app.user.email}</small></td>
+        <td>${app.professional.nome}</td>
+        <td>${app.service.nome_servico}</td>
+        <td>${formattedDate}</td>
+        <td><span class="${badgeClass}">${app.status}</span></td>
+        <td>${actionButtons}</td>
+      `;
+      adminAppointmentsTbody.appendChild(tr);
+    });
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  } catch (error) {
+    adminAppointmentsTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--color-danger);">Erro ao carregar: ${error.message}</td></tr>`;
+  }
+}
+
+window.adminCancelAppointment = async (id) => {
+  if (!confirm('Deseja realmente cancelar este agendamento (Ação do Administrador)?')) return;
+
+  try {
+    const res = await fetch(`${baseUrl}/appointments/${id}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.error);
+    }
+
+    alert('Agendamento cancelado com sucesso!');
+    loadAdminAppointments();
+    loadAppointments(); // Atualiza também a tabela do cliente se estiver aberta
+  } catch (error) {
+    alert(`Erro ao cancelar: ${error.message}`);
   }
 };

@@ -136,7 +136,8 @@ module.exports = {
   async cancel(req, res, next) {
     try {
       const { id } = req.params;
-      const appointment = await appointmentService.cancel(id);
+      const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'administrador');
+      const appointment = await appointmentService.cancel(id, isAdmin);
 
       return res.status(200).json({
         success: true,
@@ -159,12 +160,13 @@ module.exports = {
     try {
       const { id } = req.params;
       const { professional_id, service_id, data_hora } = req.body;
+      const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'administrador');
 
       const newAppointment = await appointmentService.reschedule(id, {
         professional_id,
         service_id,
         data_hora
-      });
+      }, isAdmin);
 
       return res.status(200).json({
         success: true,

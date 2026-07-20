@@ -157,6 +157,7 @@
         <div class="admin-tabs-nav glass-panel">
           <button class="admin-tab-btn active" id="tab-manage-professionals"><i data-lucide="users"></i> Profissionais</button>
           <button class="admin-tab-btn" id="tab-manage-services"><i data-lucide="sparkles"></i> Serviços</button>
+          <button class="admin-tab-btn" id="tab-manage-appointments"><i data-lucide="calendar"></i> Agenda Geral</button>
         </div>
 
         <!-- Gerenciar Profissionais -->
@@ -203,6 +204,32 @@
                 </tr>
               </thead>
               <tbody id="admin-services-tbody">
+                <!-- Inserido dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Agenda Geral (Todos os agendamentos) -->
+        <div class="admin-panel hidden glass-panel" id="panel-appointments">
+          <div class="section-header">
+            <h2><i data-lucide="calendar"></i> Agenda Geral de Profissionais</h2>
+            <button id="refresh-admin-appointments" class="btn-text"><i data-lucide="rotate-cw"></i> Atualizar</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Profissional</th>
+                  <th>Serviço</th>
+                  <th>Data/Hora</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="admin-appointments-tbody">
                 <!-- Inserido dinamicamente via JS -->
               </tbody>
             </table>
