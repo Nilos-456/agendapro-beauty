@@ -966,11 +966,16 @@ async function loadAdminAppointments() {
         `;
       }
 
+      const clientName = app.user ? app.user.name : 'Cliente Indefinido';
+      const clientEmail = app.user ? app.user.email : 'Sem e-mail';
+      const professionalName = app.professional ? app.professional.nome : 'Profissional Indefinido';
+      const serviceName = app.service ? app.service.nome_servico : 'Serviço Indefinido';
+
       tr.innerHTML = `
         <td>${app.id}</td>
-        <td><strong>${app.user.name}</strong><br><small style="color: var(--color-text-muted);">${app.user.email}</small></td>
-        <td>${app.professional.nome}</td>
-        <td>${app.service.nome_servico}</td>
+        <td><strong>${clientName}</strong><br><small style="color: var(--color-text-muted);">${clientEmail}</small></td>
+        <td>${professionalName}</td>
+        <td>${serviceName}</td>
         <td>${formattedDate}</td>
         <td><span class="${badgeClass}">${app.status}</span></td>
         <td>${actionButtons}</td>
