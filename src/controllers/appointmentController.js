@@ -180,6 +180,27 @@ module.exports = {
       if (error.message.includes('antecedência') || error.message.includes('conflito') || error.message.includes('passou') || error.message.includes('bloqueado') || error.message.includes('atende') || error.message.includes('cancelado')) {
         return res.status(400).json({ success: false, error: error.message });
       }
+  },
+
+  // 10. Concluir agendamento (lógico)
+  async complete(req, res, next) {
+    try {
+      const { id } = req.params;
+      const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'administrador');
+      const appointment = await appointmentService.complete(id, isAdmin);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Agendamento concluído com sucesso!',
+        data: appointment
+      });
+    } catch (error) {
+      if (error.message.includes('não encontrado')) {
+        return res.status(404).json({ success: false, error: error.message });
+      }
+      if (error.message.includes('Acesso negado') || error.message.includes('cancelado') || error.message.includes('concluído')) {
+        return res.status(400).json({ success: false, error: error.message });
+      }
       next(error);
     }
   }

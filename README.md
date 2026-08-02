@@ -144,6 +144,7 @@ Após iniciar o servidor, abra seu navegador em `http://localhost:3000`. A docum
 * **POST `/appointments`:** Cria agendamento validando conflitos e horários.
 * **POST `/appointments/:id/reschedule`:** Reagenda um horário (Valida prazo de 2h para clientes; bypass para admins).
 * **POST `/appointments/:id/cancel`:** Cancela um horário (Valida prazo de 2h para clientes; bypass para admins).
+* **POST `/appointments/:id/complete`** `[Admin Only]`: Conclui e finaliza um atendimento.
 
 ### Relatórios (`/reports`)
 * **GET `/reports/dashboard`** `[Admin Only]`: Retorna os agregados estatísticos (Totais por status, Top 5 Serviços, Top 5 Profissionais).

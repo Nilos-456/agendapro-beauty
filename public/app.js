@@ -984,6 +984,7 @@ async function loadAdminAppointments() {
       let actionButtons = '';
       if (app.status === 'agendado' || app.status === 'confirmado') {
         actionButtons = `
+          <button class="btn btn-success btn-sm" onclick="adminCompleteAppointment(${app.id})">Concluir</button>
           <button class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${app.id}, ${app.professional_id}, ${app.service_id}, '${app.data_hora.split('T')[0]}')">Reagendar</button>
           <button class="btn btn-danger btn-sm" onclick="adminCancelAppointment(${app.id})">Cancelar</button>
         `;
@@ -1036,6 +1037,31 @@ window.adminCancelAppointment = async (id) => {
     loadAppointments(); // Atualiza também a tabela do cliente se estiver aberta
   } catch (error) {
     alert(`Erro ao cancelar: ${error.message}`);
+  }
+};
+
+window.adminCompleteAppointment = async (id) => {
+  if (!confirm('Deseja realmente concluir e finalizar este atendimento?')) return;
+
+  try {
+    const res = await fetch(`${baseUrl}/appointments/${id}/complete`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.error);
+    }
+
+    alert('Atendimento concluído com sucesso!');
+    loadAdminAppointments();
+    loadAdminReports(); // Atualiza também os relatórios do dashboard
+    loadAppointments(); // Atualiza também a tabela do cliente se estiver aberta
+  } catch (error) {
+    alert(`Erro ao concluir: ${error.message}`);
   }
 };
 

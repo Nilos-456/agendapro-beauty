@@ -259,4 +259,31 @@ router.post('/:id/cancel', auth, appointmentController.cancel);
  */
 router.post('/:id/reschedule', auth, appointmentController.reschedule);
 
+/**
+ * @swagger
+ * /appointments/{id}/complete:
+ *   post:
+ *     summary: Concluir logicamente um agendamento (Apenas Administrador)
+ *     tags: [Agendamentos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID do agendamento
+ *     responses:
+ *       200:
+ *         description: Agendamento concluído com sucesso
+ *       400:
+ *         description: Agendamento já cancelado ou já concluído
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Acesso negado para não administradores
+ *       404:
+ *         description: Agendamento não encontrado
+ */
+router.post('/:id/complete', auth, admin, appointmentController.complete);
+
 module.exports = router;

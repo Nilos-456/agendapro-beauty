@@ -396,6 +396,30 @@ class AppointmentService {
       await transaction.rollback();
       throw new Error(error.message);
     }
+  async complete(id, isAdmin = false) {
+    try {
+      if (!isAdmin) {
+        throw new Error('Acesso negado. Apenas administradores podem concluir atendimentos');
+      }
+
+      const appointment = await Appointment.findByPk(id);
+      if (!appointment) {
+        throw new Error('Agendamento não encontrado');
+      }
+
+      if (appointment.status === 'cancelado') {
+        throw new Error('Não é possível concluir um agendamento cancelado');
+      }
+
+      if (appointment.status === 'concluido') {
+        throw new Error('Este agendamento já foi concluído');
+      }
+
+      await appointment.update({ status: 'concluido' });
+      return appointment;
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 }
 
