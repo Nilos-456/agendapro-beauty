@@ -396,6 +396,8 @@ class AppointmentService {
       await transaction.rollback();
       throw new Error(error.message);
     }
+  }
+
   async complete(id, isAdmin = false) {
     try {
       if (!isAdmin) {

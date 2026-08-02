@@ -180,6 +180,8 @@ module.exports = {
       if (error.message.includes('antecedência') || error.message.includes('conflito') || error.message.includes('passou') || error.message.includes('bloqueado') || error.message.includes('atende') || error.message.includes('cancelado')) {
         return res.status(400).json({ success: false, error: error.message });
       }
+      next(error);
+    }
   },
 
   // 10. Concluir agendamento (lógico)
