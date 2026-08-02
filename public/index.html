@@ -158,6 +158,7 @@
           <button class="admin-tab-btn active" id="tab-manage-professionals"><i data-lucide="users"></i> Profissionais</button>
           <button class="admin-tab-btn" id="tab-manage-services"><i data-lucide="sparkles"></i> Serviços</button>
           <button class="admin-tab-btn" id="tab-manage-appointments"><i data-lucide="calendar"></i> Agenda Geral</button>
+          <button class="admin-tab-btn" id="tab-manage-reports"><i data-lucide="bar-chart-2"></i> Relatórios</button>
         </div>
 
         <!-- Gerenciar Profissionais -->
@@ -233,6 +234,65 @@
                 <!-- Inserido dinamicamente via JS -->
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Painel de Relatórios e Dashboard -->
+        <div class="admin-panel hidden glass-panel" id="panel-reports">
+          <div class="section-header">
+            <h2><i data-lucide="bar-chart-2"></i> Dashboard e Estatísticas</h2>
+            <button id="refresh-admin-reports" class="btn-text"><i data-lucide="rotate-cw"></i> Atualizar</button>
+          </div>
+          
+          <!-- Grid de Cards de KPI -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon icon-total"><i data-lucide="calendar"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Total Agendamentos</span>
+                <h3 class="stat-value" id="stat-total-appointments">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-concluido"><i data-lucide="check-circle"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Concluídos</span>
+                <h3 class="stat-value" id="stat-completed-appointments">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-agendado"><i data-lucide="clock"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Ativos</span>
+                <h3 class="stat-value" id="stat-active-appointments">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon icon-cancelado"><i data-lucide="x-circle"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Cancelados</span>
+                <h3 class="stat-value" id="stat-cancelled-appointments">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colunas de Rankings -->
+          <div class="dashboard-rankings-layout">
+            <!-- Ranking de Serviços -->
+            <div class="ranking-panel">
+              <h3><i data-lucide="sparkles"></i> Serviços Mais Solicitados</h3>
+              <div class="ranking-list" id="ranking-services-list">
+                <!-- Preenchido via JS -->
+              </div>
+            </div>
+
+            <!-- Ranking de Profissionais -->
+            <div class="ranking-panel">
+              <h3><i data-lucide="users"></i> Profissionais Mais Requisitados</h3>
+              <div class="ranking-list" id="ranking-professionals-list">
+                <!-- Preenchido via JS -->
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -25,14 +25,27 @@ const adminView = document.getElementById('admin-view');
 const tabManageProfessionals = document.getElementById('tab-manage-professionals');
 const tabManageServices = document.getElementById('tab-manage-services');
 const tabManageAppointments = document.getElementById('tab-manage-appointments');
+const tabManageReports = document.getElementById('tab-manage-reports');
 const panelProfessionals = document.getElementById('panel-professionals');
 const panelServices = document.getElementById('panel-services');
 const panelAppointments = document.getElementById('panel-appointments');
+const panelReports = document.getElementById('panel-reports');
 
 const adminProfessionalsTbody = document.getElementById('admin-professionals-tbody');
 const adminServicesTbody = document.getElementById('admin-services-tbody');
 const adminAppointmentsTbody = document.getElementById('admin-appointments-tbody');
 const refreshAdminAppointments = document.getElementById('refresh-admin-appointments');
+const refreshAdminReports = document.getElementById('refresh-admin-reports');
+
+// KPI stats
+const statTotalAppointments = document.getElementById('stat-total-appointments');
+const statCompletedAppointments = document.getElementById('stat-completed-appointments');
+const statActiveAppointments = document.getElementById('stat-active-appointments');
+const statCancelledAppointments = document.getElementById('stat-cancelled-appointments');
+
+// Rankings lists
+const rankingServicesList = document.getElementById('ranking-services-list');
+const rankingProfessionalsList = document.getElementById('ranking-professionals-list');
 
 const btnAddProfessional = document.getElementById('btn-add-professional');
 const btnAddService = document.getElementById('btn-add-service');
@@ -596,6 +609,7 @@ function setupModalListeners() {
       loadAppointments();
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'administrador')) {
         loadAdminAppointments();
+        loadAdminReports();
       }
     } catch (error) {
       rescheduleAlert.innerText = error.message;
@@ -616,7 +630,9 @@ function setupAdminListeners() {
   tabManageProfessionals.addEventListener('click', () => switchAdminSubtab('professionals'));
   tabManageServices.addEventListener('click', () => switchAdminSubtab('services'));
   tabManageAppointments.addEventListener('click', () => switchAdminSubtab('appointments'));
+  tabManageReports.addEventListener('click', () => switchAdminSubtab('reports'));
   refreshAdminAppointments.addEventListener('click', loadAdminAppointments);
+  refreshAdminReports.addEventListener('click', loadAdminReports);
 
   // Abrir Modais de Adicionar
   btnAddProfessional.addEventListener('click', () => openProfessionalModal());
@@ -650,16 +666,19 @@ function switchTabToAdmin() {
   loadAdminProfessionals();
   loadAdminServices();
   loadAdminAppointments();
+  loadAdminReports();
 }
 
 function switchAdminSubtab(type) {
   tabManageProfessionals.classList.remove('active');
   tabManageServices.classList.remove('active');
   tabManageAppointments.classList.remove('active');
+  tabManageReports.classList.remove('active');
 
   panelProfessionals.classList.add('hidden');
   panelServices.classList.add('hidden');
   panelAppointments.classList.add('hidden');
+  panelReports.classList.add('hidden');
 
   if (type === 'professionals') {
     tabManageProfessionals.classList.add('active');
@@ -671,6 +690,10 @@ function switchAdminSubtab(type) {
     tabManageAppointments.classList.add('active');
     panelAppointments.classList.remove('hidden');
     loadAdminAppointments();
+  } else if (type === 'reports') {
+    tabManageReports.classList.add('active');
+    panelReports.classList.remove('hidden');
+    loadAdminReports();
   }
 }
 
@@ -1009,8 +1032,100 @@ window.adminCancelAppointment = async (id) => {
 
     alert('Agendamento cancelado com sucesso!');
     loadAdminAppointments();
+    loadAdminReports(); // Atualiza também os relatórios do dashboard
     loadAppointments(); // Atualiza também a tabela do cliente se estiver aberta
   } catch (error) {
     alert(`Erro ao cancelar: ${error.message}`);
   }
 };
+
+// --- CONTROLLER DE RELATÓRIOS DO FRONTEND ---
+
+async function loadAdminReports() {
+  try {
+    // Definir estado inicial de carregamento
+    statTotalAppointments.innerText = '...';
+    statCompletedAppointments.innerText = '...';
+    statActiveAppointments.innerText = '...';
+    statCancelledAppointments.innerText = '...';
+    rankingServicesList.innerHTML = '<div style="text-align: center; font-size: 13px; color: var(--color-text-muted);">Buscando ranking de serviços...</div>';
+    rankingProfessionalsList.innerHTML = '<div style="text-align: center; font-size: 13px; color: var(--color-text-muted);">Buscando ranking de profissionais...</div>';
+
+    const res = await fetch(`${baseUrl}/reports/dashboard`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const json = await res.json();
+
+    if (!json.success) {
+      throw new Error(json.error || 'Erro ao carregar dados do dashboard.');
+    }
+
+    const { totals, topServices, topProfessionals } = json.data;
+
+    // 1. Atualizar cards KPI
+    statTotalAppointments.innerText = totals.total;
+    statCompletedAppointments.innerText = totals.concluido;
+    statActiveAppointments.innerText = totals.agendado + totals.confirmado;
+    statCancelledAppointments.innerText = totals.cancelado;
+
+    // 2. Preencher Ranking de Serviços
+    rankingServicesList.innerHTML = '';
+    if (topServices.length === 0) {
+      rankingServicesList.innerHTML = '<div style="text-align: center; font-size: 13px; color: var(--color-text-muted);">Nenhum serviço agendado ainda.</div>';
+    } else {
+      const maxServiceCount = Math.max(...topServices.map(s => s.count), 1);
+      topServices.forEach(s => {
+        const percent = Math.round((s.count / maxServiceCount) * 100);
+        const item = document.createElement('div');
+        item.className = 'ranking-item';
+        item.innerHTML = `
+          <div class="ranking-item-header">
+            <span>${s.nome_servico}</span>
+            <span class="ranking-count">${s.count} ${s.count === 1 ? 'agendamento' : 'agendamentos'}</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+          </div>
+        `;
+        rankingServicesList.appendChild(item);
+      });
+    }
+
+    // 3. Preencher Ranking de Profissionais
+    rankingProfessionalsList.innerHTML = '';
+    if (topProfessionals.length === 0) {
+      rankingProfessionalsList.innerHTML = '<div style="text-align: center; font-size: 13px; color: var(--color-text-muted);">Nenhum profissional agendado ainda.</div>';
+    } else {
+      const maxProfCount = Math.max(...topProfessionals.map(p => p.count), 1);
+      topProfessionals.forEach(p => {
+        const percent = Math.round((p.count / maxProfCount) * 100);
+        const item = document.createElement('div');
+        item.className = 'ranking-item';
+        item.innerHTML = `
+          <div class="ranking-item-header">
+            <span>${p.nome_profissional}</span>
+            <span class="ranking-count">${p.count} ${p.count === 1 ? 'agendamento' : 'agendamentos'}</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+          </div>
+        `;
+        rankingProfessionalsList.appendChild(item);
+      });
+    }
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  } catch (error) {
+    console.error('Erro ao carregar relatórios:', error);
+    statTotalAppointments.innerText = 'Erro';
+    statCompletedAppointments.innerText = 'Erro';
+    statActiveAppointments.innerText = 'Erro';
+    statCancelledAppointments.innerText = 'Erro';
+    rankingServicesList.innerHTML = `<div style="text-align: center; font-size: 13px; color: var(--color-danger);">Erro: ${error.message}</div>`;
+    rankingProfessionalsList.innerHTML = `<div style="text-align: center; font-size: 13px; color: var(--color-danger);">Erro: ${error.message}</div>`;
+  }
+}
