@@ -65,7 +65,6 @@ agendapro-beauty/
 * **ORM:** Sequelize
 * **Banco de Dados:** PostgreSQL (Dialeto configurado) / SQLite (para testes rápidos de desenvolvimento)
 * **Criptografia & Segurança:** Bcrypt & JWT (JSON Web Tokens)
-* **Documentação:** Swagger (exposto em `/api-docs`)
 
 ---
 
@@ -108,7 +107,7 @@ npm run dev
 ```bash
 npm start
 ```
-Após iniciar o servidor, abra seu navegador em `http://localhost:3000`. A documentação interativa das rotas da API pode ser visualizada no Swagger através de `http://localhost:3000/api-docs`.
+Após iniciar o servidor, abra seu navegador em `http://localhost:3000` para acessar o site de demonstração do sistema.
 
 ---
 

@@ -1,7 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./swagger');
 const professionalRoutes = require('./routes/professionalRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
@@ -21,13 +19,6 @@ app.use(express.json());
 // Registrar rotas de autenticação
 app.use('/auth', authRoutes);
 
-// Swagger UI na rota /api-docs
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  swaggerOptions: {
-    persistAuthorization: true,
-  },
-}));
-
 // Rota de teste simples
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Servidor rodando!' });
@@ -45,5 +36,4 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`📚 Documentação Swagger: http://localhost:${PORT}/api-docs`);
 });
